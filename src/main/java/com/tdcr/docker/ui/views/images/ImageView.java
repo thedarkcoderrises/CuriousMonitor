@@ -36,8 +36,6 @@ public class ImageView extends PolymerTemplate<TemplateModel>{
 
     @Id("dialog")
     private Dialog dialog;
-    @Id("dialog")
-    private Dialog vaadinDialog;
 
     /**
      * Creates a new ContainerView.
