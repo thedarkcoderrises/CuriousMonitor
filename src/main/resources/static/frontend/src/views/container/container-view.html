@@ -1,0 +1,32 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../components/search-bar.html">
+<link rel="import" href="../../../bower_components/vaadin-grid/src/vaadin-grid.html">
+<link rel="import" href="../../../bower_components/vaadin-dialog/src/vaadin-dialog.html">
+
+<dom-module id="container-dtl-view">
+    <template>
+<style include="shared-styles">
+            :host {
+                display: block;
+            }
+        </style>
+<search-bar id="search" field-placeholder="Search" show-checkbox></search-bar>
+<vaadin-grid id="grid"></vaadin-grid>
+<vaadin-dialog on-opened-changed="_onDialogOpen"></vaadin-dialog>
+</template>
+
+    <script>
+        class ContainerDtlView extends Polymer.Element {
+            static get is() {
+                return 'container-dtl-view';
+            }
+
+            static get properties() {
+                return {
+                    // Declare your properties here.
+                };
+            }
+        }
+        customElements.define(ContainerDtlView.is, ContainerDtlView);
+    </script>
+</dom-module>
