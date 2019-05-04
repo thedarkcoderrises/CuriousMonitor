@@ -1,6 +1,6 @@
 package com.tdcr.docker.ui.views.error;
 
-import com.tdcr.docker.ui.utils.AppConst;
+import com.tdcr.docker.utils.AppConst;
 import com.tdcr.docker.ui.views.MainView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;

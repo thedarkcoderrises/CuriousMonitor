@@ -3,7 +3,7 @@ package com.tdcr.docker.app.security;
 import com.tdcr.docker.backend.repositories.UserRepository;
 import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.User;
-import com.tdcr.docker.ui.utils.AppConst;
+import com.tdcr.docker.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +26,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private static final String LOGIN_PROCESSING_URL = "/login";
 	private static final String LOGIN_FAILURE_URL = "/login?error";
 	private static final String LOGIN_URL = "/login";
-	private static final String LOGOUT_SUCCESS_URL = "/" + AppConst.PAGE_CONTAINER_DTL;
+	private static final String LOGOUT_SUCCESS_URL = "/" + AppConst.PAGE_CONTAINERS;
 
 	private final UserDetailsService userDetailsService;
 

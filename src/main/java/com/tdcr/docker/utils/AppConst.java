@@ -1,17 +1,21 @@
-package com.tdcr.docker.ui.utils;
+package com.tdcr.docker.utils;
 
 public class AppConst {
 
     public static final String PAGE_TITLE = "Curious";
     public static final String VIEWPORT = "width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes";
-    public static final String PAGE_CONTAINER_DTL = "containerDetails";
+    public static final String PAGE_CONTAINERS = "containers";
     public static final String TITLE_ACCESS_DENIED = "Access denied";
     public static final String TITLE_NOT_FOUND = "Page was not found";
-    public static final String TITLE_CONTAINER = "ContainerDetails";
+    public static final String TITLE_CONTAINER = "Containers";
     public static final String TITLE_USERS = "Users";
     public static final String PAGE_USERS = "users";
     public static final String TITLE_LOGOUT = "Logout";
     public static final String APP_NAME = "Curious";
+    public static final String TITLE_DASHBOARD = "DashBoard";
+    public static final String TITLE_IMAGES = "Images";
+    public static final String PAGE_IMAGES = "images";
+    public static final String PAGE_DASHBOARD = "dashboard";
     public static int NOTIFICATION_DURATION = 4000;
 
     public static final String ENTITY_NOT_FOUND = "The selected entity was not found.";

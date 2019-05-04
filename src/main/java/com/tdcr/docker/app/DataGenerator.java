@@ -35,6 +35,7 @@ public class DataGenerator implements HasLogger {
 		getLogger().info("Generating demo data");
 		getLogger().info("... generating users");
 		createAdmin(userRepository, passwordEncoder);
+		createChecker(userRepository,passwordEncoder);
 		getLogger().info("Generated demo data");
 	}
 
@@ -45,8 +46,13 @@ public class DataGenerator implements HasLogger {
 						passwordEncoder.encode("admin"), Role.ADMIN, true));
 	}
 
+	private User createChecker(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+		return userRepository.save(
+				createUser("checker@tdcr.com", "Curious", "Checker",
+						passwordEncoder.encode("checker"), Role.CHECKER, true));
+	}
 	private User createUser(String email, String firstName, String lastName, String passwordHash, String role,
-			boolean locked) {
+							boolean locked) {
 		User user = new User();
 		user.setEmail(email);
 		user.setFirstName(firstName);

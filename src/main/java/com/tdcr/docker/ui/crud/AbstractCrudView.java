@@ -5,7 +5,7 @@ import com.tdcr.docker.backend.data.entity.AbstractEntity;
 import com.tdcr.docker.backend.data.entity.util.EntityUtil;
 import com.tdcr.docker.backend.service.FilterableCrudService;
 import com.tdcr.docker.ui.components.SearchBar;
-import com.tdcr.docker.ui.utils.AppConst;
+import com.tdcr.docker.utils.AppConst;
 import com.tdcr.docker.ui.views.HasNotifications;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
@@ -43,13 +43,14 @@ public abstract class AbstractCrudView<E extends AbstractEntity> extends Crud<E>
         crudI18n.setEditLabel("Edit " + entityName);
         crudI18n.getConfirm().getCancel().setContent(String.format(AppConst.DISCARD_MESSAGE, entityName));
         crudI18n.getConfirm().getDelete().setContent(String.format(AppConst.DELETE_MESSAGE, entityName));
+        crudI18n.getConfirm().getDelete().setTitle("Delete "+entityName);
         crudI18n.setDeleteItem("Delete");
         setI18n(crudI18n);
 
         CrudEntityDataProvider<E> dataProvider = new CrudEntityDataProvider<>(service);
         grid.setDataProvider(dataProvider);
         setupGrid(grid);
-        Crud.addEditColumn(grid);
+        Crud.addEditColumn(grid);//grid row edit
 
         entityPresenter = new CrudEntityPresenter<>(service, currentUser, this);
 

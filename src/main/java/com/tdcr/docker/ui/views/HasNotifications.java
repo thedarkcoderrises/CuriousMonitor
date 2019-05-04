@@ -1,6 +1,6 @@
 package com.tdcr.docker.ui.views;
 
-import com.tdcr.docker.ui.utils.AppConst;
+import com.tdcr.docker.utils.AppConst;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;

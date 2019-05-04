@@ -5,7 +5,7 @@ import com.tdcr.docker.app.security.CurrentUser;
 import com.tdcr.docker.backend.data.entity.AbstractEntity;
 import com.tdcr.docker.backend.service.CrudService;
 import com.tdcr.docker.ui.exceptions.UserFriendlyDataException;
-import com.tdcr.docker.ui.utils.AppConst;
+import com.tdcr.docker.utils.AppConst;
 import com.tdcr.docker.ui.views.HasNotifications;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;

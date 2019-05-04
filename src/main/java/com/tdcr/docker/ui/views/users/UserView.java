@@ -6,7 +6,7 @@ import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.User;
 import com.tdcr.docker.backend.service.UserService;
 import com.tdcr.docker.ui.crud.AbstractCrudView;
-import com.tdcr.docker.ui.utils.AppConst;
+import com.tdcr.docker.utils.AppConst;
 import com.tdcr.docker.ui.views.MainView;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static com.tdcr.docker.ui.utils.AppConst.PAGE_USERS;
+import static com.tdcr.docker.utils.AppConst.PAGE_USERS;
 
 @Route(value = PAGE_USERS, layout = MainView.class)
 @PageTitle(AppConst.TITLE_USERS)
