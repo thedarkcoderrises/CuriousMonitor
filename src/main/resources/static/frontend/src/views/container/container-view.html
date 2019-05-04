@@ -3,7 +3,7 @@
 <link rel="import" href="../../../bower_components/vaadin-grid/src/vaadin-grid.html">
 <link rel="import" href="../../../bower_components/vaadin-dialog/src/vaadin-dialog.html">
 
-<dom-module id="container-dtl-view">
+<dom-module id="container-view">
     <template>
 <style include="shared-styles">
             :host {
@@ -12,13 +12,13 @@
         </style>
 <search-bar id="search" field-placeholder="Search" show-checkbox></search-bar>
 <vaadin-grid id="grid"></vaadin-grid>
-<vaadin-dialog on-opened-changed="_onDialogOpen"></vaadin-dialog>
+<vaadin-dialog on-opened-changed="_onDialogOpen" id="dialog"></vaadin-dialog>
 </template>
 
     <script>
-        class ContainerDtlView extends Polymer.Element {
+        class ContainerView extends Polymer.Element {
             static get is() {
-                return 'container-dtl-view';
+                return 'container-view';
             }
 
             static get properties() {
@@ -27,6 +27,6 @@
                 };
             }
         }
-        customElements.define(ContainerDtlView.is, ContainerDtlView);
+        customElements.define(ContainerView.is, ContainerView);
     </script>
 </dom-module>
