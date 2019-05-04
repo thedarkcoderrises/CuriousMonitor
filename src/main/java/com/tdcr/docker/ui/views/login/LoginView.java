@@ -2,7 +2,7 @@ package com.tdcr.docker.ui.views.login;
 
 import com.tdcr.docker.app.security.SecurityUtils;
 import com.tdcr.docker.ui.components.AppCookieConsent;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.ui.views.MainView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;

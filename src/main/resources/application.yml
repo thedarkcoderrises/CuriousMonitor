@@ -1,3 +1,8 @@
 server.port: 8080
 # This is a workaround for https://github.org/peimari/tab/as/main/layout/example/spring/issues/381
 spring.servlet.multipart.enabled: false
+
+
+dockerDaemonMap:
+  LOCAL_DD: "localhost"
+  AWS_DD: ""

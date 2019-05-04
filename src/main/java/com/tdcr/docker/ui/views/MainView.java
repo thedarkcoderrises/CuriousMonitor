@@ -3,7 +3,7 @@ package com.tdcr.docker.ui.views;
 
 import com.tdcr.docker.app.security.SecurityUtils;
 import com.tdcr.docker.ui.components.AppCookieConsent;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.ui.views.users.UserView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AbstractAppRouterLayout;
@@ -14,7 +14,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.page.Viewport;
 
-import static com.tdcr.docker.utils.AppConst.VIEWPORT;
+import static com.tdcr.docker.backend.utils.AppConst.VIEWPORT;
 
 @Viewport(VIEWPORT)
 //@PWA(name = "Curious App Monitor", shortName = "curious",

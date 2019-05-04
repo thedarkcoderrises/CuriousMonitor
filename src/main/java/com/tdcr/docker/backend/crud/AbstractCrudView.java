@@ -1,11 +1,11 @@
-package com.tdcr.docker.ui.crud;
+package com.tdcr.docker.backend.crud;
 
 import com.tdcr.docker.app.security.CurrentUser;
 import com.tdcr.docker.backend.data.entity.AbstractEntity;
-import com.tdcr.docker.backend.data.entity.util.EntityUtil;
+import com.tdcr.docker.backend.utils.EntityUtil;
 import com.tdcr.docker.backend.service.FilterableCrudService;
 import com.tdcr.docker.ui.components.SearchBar;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.ui.views.HasNotifications;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;

@@ -3,7 +3,7 @@ package com.tdcr.docker.app.security;
 import com.tdcr.docker.backend.repositories.UserRepository;
 import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.User;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;

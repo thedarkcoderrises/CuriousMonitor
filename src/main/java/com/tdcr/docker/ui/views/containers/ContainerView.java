@@ -1,10 +1,10 @@
 package com.tdcr.docker.ui.views.containers;
 
-import com.tdcr.docker.backend.data.entity.Container;
-import com.tdcr.docker.backend.data.entity.util.EntityUtil;
+import com.tdcr.docker.backend.data.entity.DocContainer;
+import com.tdcr.docker.backend.utils.EntityUtil;
 import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.MainView;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.utils.AppConst;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -31,7 +31,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel>{
     private SearchBar searchBar;
 
     @Id("grid")
-    private Grid<Container> grid;
+    private Grid<DocContainer> grid;
 
     @Id("dialog")
     private Dialog dialog;
@@ -41,7 +41,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel>{
      * Creates a new ContainerView.
      */
     public ContainerView() {
-        searchBar.setActionText("New "+ EntityUtil.getName(Container.class));
+        searchBar.setActionText("New "+ EntityUtil.getName(DocContainer.class));
         searchBar.setCheckboxText("Show stop containers");
         grid.setSelectionMode(Grid.SelectionMode.NONE);
     }

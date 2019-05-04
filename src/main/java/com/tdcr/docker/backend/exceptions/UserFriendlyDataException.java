@@ -1,4 +1,4 @@
-package com.tdcr.docker.ui.exceptions;
+package com.tdcr.docker.backend.exceptions;
 
 import org.springframework.dao.DataIntegrityViolationException;
 

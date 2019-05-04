@@ -1,7 +1,7 @@
 package com.tdcr.docker.ui.views.error;
 
-import com.tdcr.docker.ui.exceptions.AccessDeniedException;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.exceptions.AccessDeniedException;
+import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.ui.views.MainView;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;

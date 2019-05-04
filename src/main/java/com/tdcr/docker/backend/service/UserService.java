@@ -2,8 +2,8 @@ package com.tdcr.docker.backend.service;
 
 import com.tdcr.docker.backend.data.entity.User;
 import com.tdcr.docker.backend.repositories.UserRepository;
-import com.tdcr.docker.ui.exceptions.UserFriendlyDataException;
-import com.tdcr.docker.utils.AppConst;
+import com.tdcr.docker.backend.exceptions.UserFriendlyDataException;
+import com.tdcr.docker.backend.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package com.tdcr.docker.ui.crud;
+package com.tdcr.docker.backend.crud;
 
 import com.tdcr.docker.backend.data.entity.AbstractEntity;
 import com.tdcr.docker.backend.service.FilterableCrudService;

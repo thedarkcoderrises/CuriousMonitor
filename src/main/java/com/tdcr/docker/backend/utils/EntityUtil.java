@@ -1,4 +1,4 @@
-package com.tdcr.docker.backend.data.entity.util;
+package com.tdcr.docker.backend.utils;
 
 
 import com.tdcr.docker.backend.data.entity.AbstractEntity;
