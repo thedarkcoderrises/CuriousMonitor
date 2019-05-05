@@ -16,6 +16,7 @@ public class AppConst {
     public static final String TITLE_IMAGES = "Images";
     public static final String PAGE_IMAGES = "images";
     public static final String PAGE_DASHBOARD = "dashboard";
+    public static final String DOCKER_CONTAINER_NAME = "Container";
     public static int NOTIFICATION_DURATION = 4000;
 
     public static final String ENTITY_NOT_FOUND = "The selected entity was not found.";
