@@ -16,4 +16,8 @@ public class DataUtil {
         JsonArray jsonArray = new Gson().toJsonTree(object).getAsJsonArray();
         return  jsonArray;
     }
+
+    public static Boolean caseInsensitiveContains(String where, String what) {
+        return where.toLowerCase().contains(what.toLowerCase());
+    }
 }

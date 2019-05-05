@@ -1,4 +1,4 @@
 package com.tdcr.docker.backend.data.entity;
 
-public class DocImage extends AbstractEntity {
+public class DockImage extends AbstractEntity {
 }

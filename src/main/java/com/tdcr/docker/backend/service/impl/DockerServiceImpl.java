@@ -4,7 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Statistics;
-import com.tdcr.docker.backend.data.entity.DocContainer;
+import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.FirstObjectResultCallback;
@@ -40,7 +40,7 @@ public class DockerServiceImpl implements DockerService {
     }
 
     @Override
-    public List<DocContainer> listAllContainers(String status) {
+    public List<DockContainer> listAllContainers(String status) {
         ListContainersCmd cmd = null;
         List<Container> lst = new ArrayList<>();
         if(StringUtils.isEmpty(status)){
@@ -54,11 +54,11 @@ public class DockerServiceImpl implements DockerService {
         return covertContainerData(lst);
     }
 
-    private List<DocContainer> covertContainerData(List<Container> lst) {
-        List<DocContainer> list = new ArrayList<>();
+    private List<DockContainer> covertContainerData(List<Container> lst) {
+        List<DockContainer> list = new ArrayList<>();
         for (Container container :
                 lst) {
-            list.add(new DocContainer(container));
+            list.add(new DockContainer(container));
         }
         return list;
     }
@@ -103,7 +103,7 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public void updateDockerClient(String dockerDaemonName) {
-        dockerClient = dockerClientMap.get(dockerDaemonName);
+        this.dockerClient = dockerClientMap.get(dockerDaemonName);
     }
 
     @Override

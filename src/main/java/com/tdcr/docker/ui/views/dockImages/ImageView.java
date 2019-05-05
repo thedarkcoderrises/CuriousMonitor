@@ -1,6 +1,7 @@
-package com.tdcr.docker.ui.views.containers;
+package com.tdcr.docker.ui.views.dockImages;
 
-import com.tdcr.docker.backend.data.entity.DocContainer;
+import com.tdcr.docker.backend.data.entity.DockContainer;
+import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.utils.EntityUtil;
 import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.MainView;
@@ -16,32 +17,31 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
- * A Designer generated component for the container-dtl-view template.
+ * A Designer generated component for the container-view template.
  *
  * Designer will add and remove fields with @Id mappings but
  * does not overwrite or otherwise change this file.
  */
-@Tag("container-view")
-@HtmlImport("src/views/container/container-view.html")
-@Route(value = AppConst.PAGE_CONTAINERS, layout = MainView.class)
-@PageTitle(AppConst.TITLE_CONTAINER)
-public class ContainerView extends PolymerTemplate<TemplateModel>{
+@Tag("image-view")
+@HtmlImport("src/views/dock-images/image-view.html")
+@Route(value = AppConst.PAGE_IMAGES, layout = MainView.class)
+@PageTitle(AppConst.TITLE_IMAGES)
+public class ImageView extends PolymerTemplate<TemplateModel>{
 
     @Id("search")
     private SearchBar searchBar;
 
     @Id("grid")
-    private Grid<DocContainer> grid;
+    private Grid<DockContainer> grid;
 
     @Id("dialog")
     private Dialog dialog;
 
-
     /**
      * Creates a new ContainerView.
      */
-    public ContainerView() {
-        searchBar.setActionText("New "+ EntityUtil.getName(DocContainer.class));
+    public ImageView() {
+        searchBar.setActionText("New "+ EntityUtil.getName(DockImage.class));
         searchBar.setCheckboxText("Show stop containers");
         grid.setSelectionMode(Grid.SelectionMode.NONE);
     }
