@@ -4,6 +4,7 @@ import com.tdcr.docker.backend.data.entity.DockContainer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface DockerService {
 
@@ -24,4 +25,6 @@ public interface DockerService {
     String getLogs(String containerId) throws InterruptedException;
 
     String removeContainer(String containerId);
+
+    Set<String> getDockerDeamons();
 }

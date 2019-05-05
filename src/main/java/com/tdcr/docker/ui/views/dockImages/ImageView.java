@@ -41,7 +41,7 @@ public class ImageView extends PolymerTemplate<TemplateModel>{
      * Creates a new ContainerView.
      */
     public ImageView() {
-        searchBar.setActionText("New "+ EntityUtil.getName(DockImage.class));
+        searchBar.setActionText("New Image");
         searchBar.setCheckboxText("Show stop containers");
         grid.setSelectionMode(Grid.SelectionMode.NONE);
     }

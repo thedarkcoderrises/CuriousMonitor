@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -127,5 +128,11 @@ public class DockerServiceImpl implements DockerService {
         }
         return containerId;
     }
+
+    @Override
+    public Set<String> getDockerDeamons() {
+        return dockerClientMap.keySet();
+    }
+
 
 }
