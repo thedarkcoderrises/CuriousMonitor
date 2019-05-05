@@ -69,6 +69,10 @@ public class SearchBar extends PolymerTemplate<SearchBar.Model> {
 		this.addListener(FilterChanged.class, listener);
 	}
 
+	public void addSearchValueChangeListener(ComponentEventListener<FilterChanged> listener) {
+		this.addListener(FilterChanged.class, listener);
+	}
+
 	public void addActionClickListener(ComponentEventListener<ClickEvent<Button>> listener) {
 		actionButton.addClickListener(listener);
 	}

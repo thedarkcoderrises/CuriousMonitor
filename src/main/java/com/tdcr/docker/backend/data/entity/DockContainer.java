@@ -3,8 +3,11 @@ package com.tdcr.docker.backend.data.entity;
 import com.github.dockerjava.api.model.ContainerPort;
 import org.springframework.util.StringUtils;
 
-public class DocContainer extends AbstractEntity{
+import javax.persistence.Id;
 
+public class DockContainer{
+
+    @Id
     String containerId;
     String containerName;
     String status;
@@ -14,7 +17,7 @@ public class DocContainer extends AbstractEntity{
     String imageId;
     String imageName;
 
-    public DocContainer(com.github.dockerjava.api.model.Container container) {
+    public DockContainer(com.github.dockerjava.api.model.Container container) {
         super();
         this.setContainerId(container.getId());
         this.setContainerName(container.getNames()[0]);

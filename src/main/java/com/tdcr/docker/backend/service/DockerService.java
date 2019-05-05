@@ -1,6 +1,6 @@
 package com.tdcr.docker.backend.service;
 
-import com.tdcr.docker.backend.data.entity.DocContainer;
+import com.tdcr.docker.backend.data.entity.DockContainer;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ public interface DockerService {
 
     String listStoppedContainers();
 
-    List<DocContainer> listAllContainers(String status);
+    List<DockContainer> listAllContainers(String status);
 
     String inspectOnContainerId(String containerId);
 

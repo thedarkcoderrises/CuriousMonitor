@@ -6,15 +6,19 @@
 
 <dom-module id="container-view">
     <template>
-<style include="shared-styles">
-            :host {
-                display: block;
-            }
-        </style>
-<search-bar id="search" field-placeholder="Search" show-checkbox></search-bar>
-<vaadin-grid id="grid" theme="orders no-row-borders"></vaadin-grid>
-<vaadin-dialog on-opened-changed="_onDialogOpen" id="dialog"></vaadin-dialog>
-</template>
+        <style include="shared-styles">
+        :host {
+            display: block;
+            flex-direction: column;
+            height: 100%;
+        }
+    </style>
+        <search-bar id="search" field-placeholder="Search" <!--show-checkbox-->
+        &gt;
+        </search-bar>
+        <vaadin-grid id="grid" style="height:94%; width:68%"></vaadin-grid>
+        <vaadin-dialog on-opened-changed="_onDialogOpen" id="dialog"></vaadin-dialog>
+    </template>
 
     <script>
         class ContainerView extends Polymer.Element {
