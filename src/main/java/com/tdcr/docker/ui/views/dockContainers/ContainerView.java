@@ -83,10 +83,9 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     }
 
     private void initButtonListeners() {
-
-
         refreshBtn.setIcon(VaadinIcon.REFRESH.create());
         refreshBtn.addClickListener(e -> {
+            initDataProvider();
             grid.setDataProvider(dataProvider);
         });
 
@@ -108,7 +107,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 Notification.show("Inavlid action!");
             } else {
                 dockerService.updateDockerClient(event.getValue());
-                initDataProvider();
                 refreshBtn.click();
             }
         });
@@ -169,18 +167,25 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             return;
         }
         boolean status = !container.getStatus().equalsIgnoreCase("running");
-        String statussMsg = status == true? "Start" :"Stop";
-        String oppStatussMsg =status != true? "Start" :"Stop";
+        String statussMsg = status == true? "Run" :"Stop";
+        String oppStatussMsg =status != true? "Run" :"Stop";
 
         Message containerMsg = new Message(
-                statussMsg+" "+container.getContainerName(), "Update Status","Discard",
-                String.format("Container %s with status %s. Continue %s?",
-                        container.getContainerName(),oppStatussMsg,statussMsg));
+                statussMsg+" "+container.getContainerName().toUpperCase(),
+                "Update Status","Discard",
+                String.format("Container %s current status = %s. Continue %s?",
+                        container.getContainerName().toUpperCase(),oppStatussMsg,statussMsg));
 
         confirmIfNecessaryAndExecute(
                 isDirty(),
                 containerMsg,
-                () ->setOpened(true),() -> clear());
+                () ->{
+                   String containerID = dockerService.updateContainerStatus(container.getContainerId(),status);
+                   if(container.getContainerId().equals(containerID)){
+                       Notification.show("Saved status");
+                       refreshBtn.click();
+                   }
+                },() -> clear());
     }
 
     @Override

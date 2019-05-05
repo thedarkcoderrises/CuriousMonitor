@@ -84,6 +84,7 @@ public class DockContainer{
     }
 
     public String getContainerName() {
+        containerName = containerName.replace("/","");
         return containerName;
     }
 
