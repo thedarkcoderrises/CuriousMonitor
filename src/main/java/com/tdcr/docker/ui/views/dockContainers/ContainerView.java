@@ -20,18 +20,14 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.NativeButtonRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.ui.renderers.ButtonRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -125,10 +121,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         searchBar.addSearchValueChangeListener(e ->
                 dataProvider.setFilter(DockContainer::getContainerName,
                         s -> DataUtil.caseInsensitiveContains(s, searchBar.getFilter())));
-//        searchBar.addFilterChangeListener(e ->
-//                dataProvider.setFilter(DockContainer::getStatus,
-//                        s -> DataUtil.caseInsensitiveContains(s, ((SearchBar)e.getSource())
-//                                .isCheckboxChecked()? "Running": s)));
     }
 
     private void setupGrid() {
@@ -154,18 +146,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             }
         })).setHeader("Status").setWidth("150px");
         grid.addColumn(DockContainer::getPort).setHeader("ExposedPort").setWidth("150px");
-//        grid.addColumn(new NativeButtonRenderer<>("Notify", clickedItem -> {
-//           Notification.show("Subscribed");
-//        }));
-
-//        grid.addColumn(TemplateRenderer.<DockContainer> of(
-//                "<vaadin-button on-click='handleUpdate' theme=\"icon\">" +
-//                        "<iron-icon icon=\"vaadin:bell\"></iron-icon>" +
-//                "</vaadin-button>")
-//                .withEventHandler("handleUpdate", container -> {
-//                    Notification.show("Subscribed");
-//                })).setKey("notify");
-
         grid.addColumn(new ComponentRenderer<>(container -> {
             Button update = new Button("", event -> {
                 if("running".equalsIgnoreCase(container.getStatus())) {
@@ -175,7 +155,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                     Notification.show("Subscribed");
                     refreshBtn.click();
                 }else{
-                    Notification.show("Container no up!");
+                    Notification.show("Container not up!");
                 }
 
             });
