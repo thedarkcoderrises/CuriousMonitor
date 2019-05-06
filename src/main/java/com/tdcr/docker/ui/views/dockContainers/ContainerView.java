@@ -15,17 +15,23 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.NativeButtonRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.ui.renderers.ButtonRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -110,6 +116,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 refreshBtn.click();
             }
         });
+        dockerComboBox.setPlaceholder("Select..");
     }
 
     private void setupSearchBar() {
@@ -136,11 +143,50 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
     private void addGridColumns() {
         grid.addColumn(DockContainer::getContainerName)
-                .setWidth("270px").setHeader("ContainerName").setFlexGrow(5).setSortable(true);
+                .setWidth("270px").setHeader("ContainerName").setFlexGrow(3).setSortable(true);
         grid.addColumn(dc -> dc.getImageName())
-                .setHeader("ImageName").setWidth("200px").setFlexGrow(5).setSortable(true);
-        grid.addColumn(DockContainer::getStatus).setHeader("Status").setWidth("150px");
+                .setHeader("ImageName").setWidth("200px").setFlexGrow(3).setSortable(true);
+        grid.addColumn(new ComponentRenderer<>(container -> {
+            if (container.getStatus().equalsIgnoreCase("running")) {
+                return new Icon(VaadinIcon.ARROW_UP);
+            } else {
+                return new Icon(VaadinIcon.ARROW_DOWN);
+            }
+        })).setHeader("Status").setWidth("150px");
         grid.addColumn(DockContainer::getPort).setHeader("ExposedPort").setWidth("150px");
+//        grid.addColumn(new NativeButtonRenderer<>("Notify", clickedItem -> {
+//           Notification.show("Subscribed");
+//        }));
+
+//        grid.addColumn(TemplateRenderer.<DockContainer> of(
+//                "<vaadin-button on-click='handleUpdate' theme=\"icon\">" +
+//                        "<iron-icon icon=\"vaadin:bell\"></iron-icon>" +
+//                "</vaadin-button>")
+//                .withEventHandler("handleUpdate", container -> {
+//                    Notification.show("Subscribed");
+//                })).setKey("notify");
+
+        grid.addColumn(new ComponentRenderer<>(container -> {
+            Button update = new Button("", event -> {
+                if("running".equalsIgnoreCase(container.getStatus())) {
+                    dockerService.setSubscriptionToContainer(
+                            container.getContainerId(),!container.isSubscription()
+                    );
+                    Notification.show("Subscribed");
+                    refreshBtn.click();
+                }else{
+                    Notification.show("Container no up!");
+                }
+
+            });
+            if(container.isSubscription()){
+                update.setIcon(VaadinIcon.BELL.create());
+            }else{
+                update.setIcon(VaadinIcon.BELL_O.create());
+            }
+            return update;
+        }));
+
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 

@@ -5,6 +5,8 @@ import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
+import com.tdcr.docker.backend.data.entity.Subscription;
+import com.tdcr.docker.backend.repositories.SubscriptionRepository;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.FirstObjectResultCallback;
@@ -15,10 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -29,6 +28,9 @@ public class DockerServiceImpl implements DockerService {
     @Autowired
     Map<String,DockerClient> dockerClientMap;
     DockerClient dockerClient;
+
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
 
     @Override
     public String listRunningContainers() {
@@ -59,7 +61,8 @@ public class DockerServiceImpl implements DockerService {
         List<DockContainer> list = new ArrayList<>();
         for (Container container :
                 lst) {
-            list.add(new DockContainer(container));
+           Optional<Subscription> subscription = subscriptionRepository.findById(container.getId());
+            list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false));
         }
         return list;
     }
@@ -132,6 +135,11 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public Set<String> getDockerDeamons() {
         return dockerClientMap.keySet();
+    }
+
+    @Override
+    public void setSubscriptionToContainer(String containerId, boolean subscription) {
+        subscriptionRepository.save(new Subscription(containerId,subscription));
     }
 
 

@@ -1,5 +1,7 @@
 package com.tdcr.docker.app;
 
+import com.tdcr.docker.backend.data.entity.Subscription;
+import com.tdcr.docker.backend.repositories.SubscriptionRepository;
 import com.tdcr.docker.backend.repositories.UserRepository;
 import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.User;
@@ -18,12 +20,15 @@ public class DataGenerator implements HasLogger {
 
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
+	private SubscriptionRepository subscriptionRepository;
 
 	@Autowired
 	public DataGenerator( UserRepository userRepository,
-                         PasswordEncoder passwordEncoder) {
+                         PasswordEncoder passwordEncoder,SubscriptionRepository subscriptionRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.subscriptionRepository = subscriptionRepository;
+		//529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40
 	}
 
 	@PostConstruct
@@ -36,7 +41,15 @@ public class DataGenerator implements HasLogger {
 		getLogger().info("... generating users");
 		createAdmin(userRepository, passwordEncoder);
 		createChecker(userRepository,passwordEncoder);
+		setSocatSubscription();
 		getLogger().info("Generated demo data");
+	}
+
+	private void setSocatSubscription() {
+		subscriptionRepository.save(
+				new Subscription(
+						"529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40",
+						true));
 	}
 
 

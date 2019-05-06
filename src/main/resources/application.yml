@@ -6,3 +6,5 @@ spring.servlet.multipart.enabled: false
 dockerDaemonMap:
   LOCAL_DD: "localhost"
   AWS_DD: ""
+
+kafka.url: localhost:9092

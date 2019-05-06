@@ -1,5 +1,6 @@
 package com.tdcr.docker.backend.data.entity;
 
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerPort;
 import org.springframework.util.StringUtils;
 
@@ -16,8 +17,9 @@ public class DockContainer{
     String runningSince;
     String imageId;
     String imageName;
+    boolean subscription;
 
-    public DockContainer(com.github.dockerjava.api.model.Container container) {
+    public DockContainer(Container container, boolean subscribed) {
         super();
         this.setContainerId(container.getId());
         this.setContainerName(container.getNames()[0]);
@@ -27,6 +29,7 @@ public class DockContainer{
         this.setRunningSince(container.getStatus());
         this.setImageId(container.getImageId());
         this.setImageName(container.getImage());
+        this.setSubscription(subscribed);
     }
 
     private String getPublicPort(ContainerPort port) {
@@ -98,5 +101,13 @@ public class DockContainer{
 
     public void setMemorySizeInMB(long memorySize) {
         this.memorySizeInMB = memorySize;
+    }
+
+    public boolean isSubscription() {
+        return subscription;
+    }
+
+    public void setSubscription(boolean subscription) {
+        this.subscription = subscription;
     }
 }

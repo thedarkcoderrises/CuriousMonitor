@@ -45,7 +45,7 @@ public class UserService implements FilterableCrudService<User> {
 	}
 
 	@Override
-	public UserRepository getRepository() {
+	public UserRepository  getRepository() {
 		return userRepository;
 	}
 

@@ -27,4 +27,6 @@ public interface DockerService {
     String removeContainer(String containerId);
 
     Set<String> getDockerDeamons();
+
+    void setSubscriptionToContainer(String containerId,boolean subscription);
 }

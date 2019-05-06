@@ -106,6 +106,16 @@
             <artifactId>jersey-hk2</artifactId>
             <version>2.28</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>0.11.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
         <!-- Vaadin -->
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -119,6 +129,11 @@
             <groupId>org.vaadin.artur</groupId>
             <artifactId>spring-data-provider</artifactId>
             <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>grid-renderers-collection-addon</artifactId>
+            <version>2.4.0</version>
         </dependency>
         <!-- End of Vaadin -->
 
