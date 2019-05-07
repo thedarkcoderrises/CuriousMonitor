@@ -1,5 +1,6 @@
 package com.tdcr.docker.backend.service;
 
+import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 
 import java.util.List;
@@ -16,7 +17,9 @@ public interface DockerService {
 
     String inspectOnContainerId(String containerId);
 
-    Map<String,String> getContainerStats(String containerId) throws Exception;
+    Statistics getContainerRawStats(String containerId);
+
+    Map<String,String> getContainerStats(String containerId);
 
     String updateContainerStatus(String containerId, boolean status);
 

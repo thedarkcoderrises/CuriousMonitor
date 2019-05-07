@@ -1,15 +1,21 @@
 package com.tdcr.docker.ui.views.dockContainers;
 
+import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
+import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.DataUtil;
 import com.tdcr.docker.ui.components.Message;
 import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.EntityView;
 import com.tdcr.docker.ui.views.MainView;
+import com.tdcr.docker.ui.views.dashboard.DashboardCounterLabel;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.charts.Chart;
+import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -68,7 +74,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     private Button refreshBtn;
 
     @Id("logs")
-    private Button logs;
+    private Button containerStats;
 
     @Id("updateStatus")
     private Button updateContainerStatus;
@@ -82,6 +88,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         initButtonListeners();
         setupGrid();
         setupSearchBar();
+        initStatDialog();
     }
 
     private void initButtonListeners() {
@@ -91,9 +98,9 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             grid.setDataProvider(dataProvider);
         });
 
-        logs.setIcon(VaadinIcon.PIE_CHART.create());
-        logs.addClickListener(e ->{
-            logSubWindow();
+        containerStats.setIcon(VaadinIcon.PIE_CHART.create());
+        containerStats.addClickListener(e ->{
+            containerStatsubWindow();
         });
 
         updateContainerStatus.setIcon(VaadinIcon.POWER_OFF.create());
@@ -140,9 +147,13 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 .setHeader("ImageName").setWidth("200px").setFlexGrow(3).setSortable(true);
         grid.addColumn(new ComponentRenderer<>(container -> {
             if (container.getStatus().equalsIgnoreCase("running")) {
-                return new Icon(VaadinIcon.ARROW_UP);
+                Icon up = VaadinIcon.ARROW_UP.create();
+                up.setColor("#7eec65");
+                return up;
             } else {
-                return new Icon(VaadinIcon.ARROW_DOWN);
+                Icon down = VaadinIcon.ARROW_DOWN.create();
+                down.setColor("#f51f06");
+                return down;
             }
         })).setHeader("Status").setWidth("150px");
         grid.addColumn(DockContainer::getPort).setHeader("ExposedPort").setWidth("150px");
@@ -152,12 +163,15 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                     dockerService.setSubscriptionToContainer(
                             container.getContainerId(),!container.isSubscription()
                     );
-                    Notification.show("Subscribed");
+                    String msg ="Subscription removed";
+                    if(!container.isSubscription()){
+                       msg = "Subscribed ";
+                    }
+                    Notification.show(msg,1000,Notification.Position.MIDDLE);
                     refreshBtn.click();
                 }else{
                     Notification.show("Container not up!");
                 }
-
             });
             if(container.isSubscription()){
                 update.setIcon(VaadinIcon.BELL.create());
@@ -170,9 +184,89 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 
-    private void logSubWindow() {
-        DockContainer selectedRow = getSelectedRow();
-        if(selectedRow == null) return;
+
+    private void initStatDialog() {
+        dialog.addDialogCloseActionListener(e ->{
+            dialog.setOpened(!dialog.isOpened());
+            dialog.removeAll();
+        });
+    }
+    private void containerStatsubWindow() {
+        DockContainer container = getSelectedRow();
+        if(container == null || !"running".equalsIgnoreCase(container.getStatus())) return;
+        dialog.setOpened(true);
+        dialog.add(getBoard(container));
+    }
+
+    private Component[] getBoard(DockContainer container) {
+        final Chart memGauge = new Chart(ChartType.SOLIDGAUGE);
+        Statistics stats = dockerService.getContainerRawStats(container.getContainerId());
+        Number memUsage = ((Number)stats.getMemoryStats().get("max_usage"));
+        Number memLimit = ((Number) stats.getMemoryStats().get("limit"));
+        Configuration configuration = memGauge.getConfiguration();
+        Pane pane = configuration.getPane();
+        pane.setCenter(new String[] {"50%", "50%"});
+        pane.setStartAngle(-90);
+        pane.setEndAngle(90);
+
+        Background paneBackground = new Background();
+        paneBackground.setInnerRadius("60%");
+        paneBackground.setOuterRadius("100%");
+        paneBackground.setShape(BackgroundShape.ARC);
+        pane.setBackground(paneBackground);
+
+        YAxis yAxis = configuration.getyAxis();
+        yAxis.setTickAmount(2);
+        yAxis.setTitle("Memory");
+        yAxis.setMinorTickInterval("null");
+        yAxis.getTitle().setY(-50);
+        yAxis.getLabels().setY(16);
+        yAxis.setMin(0);
+        PlotOptionsSolidgauge plotOptionsSolidgauge = new PlotOptionsSolidgauge();
+
+        DataLabels dataLabels = plotOptionsSolidgauge.getDataLabels();
+        dataLabels.setY(5);
+        dataLabels.setUseHTML(true);
+        configuration.setPlotOptions(plotOptionsSolidgauge);
+
+        DataSeries series = new DataSeries("Memory Usage");
+        DataSeriesItem item = new DataSeriesItem();
+        item.setClassName("myClassName");
+        yAxis.setMax(memLimit);
+        item.setY(memUsage);
+        DataLabels dataLabelsSeries = new DataLabels();
+        final String dataLabelsStr= "<br><div style=\"text-align:center\"><span style=\"font-size:25px;"
+                + "color:black' + '\">%s</span><br/>"
+                + "<span style=\"font-size:12px;color:silver\">r/w</span></div>";
+        dataLabelsSeries.setFormat(String.format(dataLabelsStr,ComputeStats.calculateSize(memUsage.longValue())));
+        item.setDataLabels(dataLabelsSeries);
+        series.add(item);
+        configuration.addSeries(series);
+//        Thread statFeeder = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                int i =0;
+//                while (i<10) {
+//                    Statistics stats = dockerService.getContainerRawStats(container.getContainerId());
+//                    Number memUsage = ((Number)stats.getMemoryStats().get("max_usage"));
+//                    item.setY(memUsage);
+//                    item.getDataLabels().setFormat(String.format(dataLabelsStr,ComputeStats.calculateSize(memUsage.longValue())));
+//                    try {
+//                        Thread.sleep( 500 );
+//                        i+=1;
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
+//        statFeeder.start();
+        DashboardCounterLabel networkIO = new DashboardCounterLabel().init();
+        networkIO.setData("NET I/O","",ComputeStats.calcNetworkStats(stats));
+
+        DashboardCounterLabel memusageInPercentile = new DashboardCounterLabel().init();
+        memusageInPercentile.setData("Current Usage%","", ComputeStats.computeMemoryInPercent(stats));
+        return new Component[]{memGauge,networkIO.getTitle(),networkIO.getValue(),memusageInPercentile.getTitle(),memusageInPercentile.getValue()};
     }
 
     private DockContainer getSelectedRow() {

@@ -1,0 +1,36 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/vaadin-board/vaadin-board.html">
+<link rel="import" href="../../bower_components/vaadin-board/vaadin-board-row.html">
+<link rel="import" href="../../bower_components/vaadin-charts/src/vaadin-chart.html">
+<link rel="import" href="../views/dashboard/dashboard-counter-label.html">
+
+<dom-module id="stats-board-view">
+    <template>
+<style include="shared-styles">
+            :host {
+                display: block;
+            }
+        </style>
+<vaadin-board>
+ <vaadin-board-row>
+  <vaadin-chart id="memoryStats"></vaadin-chart>
+  <dashboard-counter-label id="networkIO"></dashboard-counter-label>
+ </vaadin-board-row>
+</vaadin-board>
+</template>
+
+    <script>
+        class StatsBoardView extends Polymer.Element {
+            static get is() {
+                return 'stats-board-view';
+            }
+
+            static get properties() {
+                return {
+                    // Declare your properties here.
+                };
+            }
+        }
+        customElements.define(StatsBoardView.is, StatsBoardView);
+    </script>
+</dom-module>

@@ -75,15 +75,20 @@ public class DockerServiceImpl implements DockerService {
     }
 
     @Override
-    public Map<String,String> getContainerStats(String containerId) throws Exception {
+    public Map<String,String> getContainerStats(String containerId){
+        return ComputeStats.computeStats(getContainerStatistics(containerId));
+    }
+
+    private Statistics getContainerStatistics(String containerId){
+         Statistics stats = null;
         try {
-            StatsCmd statsCmd = dockerClient.statsCmd(containerId);
+            StatsCmd statsCmd =dockerClient.statsCmd(containerId);
             FirstObjectResultCallback<Statistics> resultCallback = new FirstObjectResultCallback<>();
-            Statistics stats = statsCmd.exec(resultCallback).waitForObject();
-            return ComputeStats.computeStats(stats);
+            stats = statsCmd.exec(resultCallback).waitForObject();
         } catch(InterruptedException e){
-            throw new Exception("Interrupted while waiting for statistics");
+           e.printStackTrace();
         }
+        return stats;
     }
 
     @Override
@@ -142,5 +147,8 @@ public class DockerServiceImpl implements DockerService {
         subscriptionRepository.save(new Subscription(containerId,subscription));
     }
 
-
+    @Override
+    public Statistics getContainerRawStats(String containerId) {
+        return getContainerStatistics(containerId);
+    }
 }

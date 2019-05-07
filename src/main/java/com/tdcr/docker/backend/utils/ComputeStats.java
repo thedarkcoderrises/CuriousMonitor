@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class ComputeStats {
 
-    private static DecimalFormat df2 = new DecimalFormat("#.####");
+    private static DecimalFormat df2 = new DecimalFormat("#.##");
     private static String PERCENT_SYMBOL = "%";
     private static String EMPTY_STRING = "";
 
@@ -26,7 +26,7 @@ public class ComputeStats {
         return hrSize;
     }
 
-    private static String calculateSize(long size) {
+    public static String calculateSize(long size) {
         String hrSize = EMPTY_STRING;
         double k = size /1024;
         double m = (k)/1024;
