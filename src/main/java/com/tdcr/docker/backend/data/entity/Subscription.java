@@ -16,7 +16,7 @@ public class Subscription implements Serializable {
     @NotEmpty
     @Size(max = 255)
     @Column(unique = true)
-    private String containerId;
+    private String imageId;
 
     @NotNull
     private boolean isSubscribed;
@@ -25,21 +25,9 @@ public class Subscription implements Serializable {
 
     public Subscription(){}
 
-    public Subscription(String containerId, boolean subscription) {
-        this.containerId = containerId;
+    public Subscription(String imageId, boolean subscription) {
+        this.imageId = imageId;
         this.isSubscribed = subscription;
-    }
-
-    public String getContainerId() {
-        return containerId;
-    }
-
-    public boolean isSubscribed() {
-        return isSubscribed;
-    }
-
-    public boolean isLocked() {
-        return locked;
     }
 
     @Override
@@ -55,11 +43,25 @@ public class Subscription implements Serializable {
         }
         Subscription that = (Subscription) o;
         return locked == that.locked &&
-                Objects.equals(containerId, that.containerId);
+                Objects.equals(imageId, that.imageId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), containerId,isSubscribed, locked);
+        return Objects.hash(super.hashCode(), imageId,isSubscribed, locked);
+    }
+
+
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    public boolean isSubscribed() {
+        return isSubscribed;
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 }

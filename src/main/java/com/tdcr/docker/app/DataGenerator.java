@@ -28,7 +28,6 @@ public class DataGenerator implements HasLogger {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.subscriptionRepository = subscriptionRepository;
-		//529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40
 	}
 
 	@PostConstruct
@@ -47,8 +46,7 @@ public class DataGenerator implements HasLogger {
 
 	private void setSocatSubscription() {
 		subscriptionRepository.save(
-				new Subscription(
-						"529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40",
+				new Subscription("e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b",
 						true));
 	}
 
