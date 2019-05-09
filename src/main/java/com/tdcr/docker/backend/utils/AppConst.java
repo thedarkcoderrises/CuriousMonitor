@@ -1,7 +1,9 @@
 package com.tdcr.docker.backend.utils;
 
-public class AppConst {
+import java.util.Locale;
 
+public class AppConst {
+    public static final Locale APP_LOCALE = Locale.US;
     public static final String PAGE_TITLE = "Curious";
     public static final String VIEWPORT = "width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes";
     public static final String PAGE_CONTAINERS = "containers";
@@ -17,6 +19,11 @@ public class AppConst {
     public static final String PAGE_IMAGES = "images";
     public static final String PAGE_DASHBOARD = "dashboard";
     public static final String DOCKER_CONTAINER_NAME = "Container";
+    public static final String EMPTY_STR = "";
+    public static final String SHA_256 = "sha256:";
+    public static final String CONTAINER_UP = "running";
+    public static final String SELECT_PH = "Select..";
+    public static final String DOCKER_DEAMON_STR = "DockerDeamon";
     public static int NOTIFICATION_DURATION = 4000;
 
     public static final String ENTITY_NOT_FOUND = "The selected entity was not found.";

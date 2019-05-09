@@ -2,6 +2,7 @@ package com.tdcr.docker.ui.views.dockContainers;
 
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
+import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
@@ -67,7 +68,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
     private ListDataProvider<DockContainer> dataProvider;
 
-    @Id("comboBox")
     private ComboBox<String> dockerComboBox;
 
     @Id("refresh")
@@ -84,7 +84,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
      */
     @PostConstruct
     void init() {
-        initDockerCombobox();
         initButtonListeners();
         setupGrid();
         setupSearchBar();
@@ -119,15 +118,29 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 refreshBtn.click();
             }
         });
-        dockerComboBox.setPlaceholder("Select..");
+        dockerComboBox.setPlaceholder(AppConst.SELECT_PH);
     }
 
     private void setupSearchBar() {
-        searchBar.setActionText("New Container");
-        searchBar.setCheckboxText("Exclude stopped containers");
+        searchBar.getActionButton().setIcon(VaadinIcon.REFRESH.create());
+        searchBar.getActionButton().addClickListener(e ->{
+            initDataProvider();
+            grid.setDataProvider(dataProvider);
+        });
         searchBar.addSearchValueChangeListener(e ->
                 dataProvider.setFilter(DockContainer::getContainerName,
                         s -> DataUtil.caseInsensitiveContains(s, searchBar.getFilter())));
+        this.dockerComboBox =searchBar.getComboBox();
+        dockerComboBox.setItems(dockerService.getDockerDeamons());
+        dockerComboBox.setPlaceholder(AppConst.DOCKER_DEAMON_STR);
+        dockerComboBox.addValueChangeListener(e -> {
+            if (e.getSource().isEmpty()) {
+                Notification.show("Inavlid action!");
+            } else {
+                dockerService.updateDockerClient(e.getValue());
+                searchBar.getActionButton().click();
+            }
+        });
     }
 
     private void setupGrid() {
@@ -146,7 +159,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         grid.addColumn(dc -> dc.getImageName())
                 .setHeader("ImageName").setWidth("200px").setFlexGrow(3).setSortable(true);
         grid.addColumn(new ComponentRenderer<>(container -> {
-            if (container.getStatus().equalsIgnoreCase("running")) {
+            if (container.getStatus().equalsIgnoreCase(AppConst.CONTAINER_UP)) {
                 Icon up = VaadinIcon.ARROW_UP.create();
                 up.setColor("#7eec65");
                 return up;
@@ -157,30 +170,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             }
         })).setHeader("Status").setWidth("150px");
         grid.addColumn(DockContainer::getPort).setHeader("ExposedPort").setWidth("150px");
-        grid.addColumn(new ComponentRenderer<>(container -> {
-            Button update = new Button("", event -> {
-                if("running".equalsIgnoreCase(container.getStatus())) {
-                    dockerService.setSubscriptionToContainer(
-                            container.getContainerId(),!container.isSubscription()
-                    );
-                    String msg ="Subscription removed";
-                    if(!container.isSubscription()){
-                       msg = "Subscribed ";
-                    }
-                    Notification.show(msg,1000,Notification.Position.MIDDLE);
-                    refreshBtn.click();
-                }else{
-                    Notification.show("Container not up!");
-                }
-            });
-            if(container.isSubscription()){
-                update.setIcon(VaadinIcon.BELL.create());
-            }else{
-                update.setIcon(VaadinIcon.BELL_O.create());
-            }
-            return update;
-        }));
-
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 
@@ -193,7 +182,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     }
     private void containerStatsubWindow() {
         DockContainer container = getSelectedRow();
-        if(container == null || !"running".equalsIgnoreCase(container.getStatus())) return;
+        if(container == null || !AppConst.CONTAINER_UP.equalsIgnoreCase(container.getStatus())) return;
         dialog.setOpened(true);
         dialog.add(getBoard(container));
     }
@@ -242,25 +231,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         item.setDataLabels(dataLabelsSeries);
         series.add(item);
         configuration.addSeries(series);
-//        Thread statFeeder = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                int i =0;
-//                while (i<10) {
-//                    Statistics stats = dockerService.getContainerRawStats(container.getContainerId());
-//                    Number memUsage = ((Number)stats.getMemoryStats().get("max_usage"));
-//                    item.setY(memUsage);
-//                    item.getDataLabels().setFormat(String.format(dataLabelsStr,ComputeStats.calculateSize(memUsage.longValue())));
-//                    try {
-//                        Thread.sleep( 500 );
-//                        i+=1;
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
-//        statFeeder.start();
         DashboardCounterLabel networkIO = new DashboardCounterLabel().init();
         networkIO.setData("NET I/O","",ComputeStats.calcNetworkStats(stats));
 
@@ -286,7 +256,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             Notification.show("Inavlid action!");
             return;
         }
-        boolean status = !container.getStatus().equalsIgnoreCase("running");
+        boolean status = !container.getStatus().equalsIgnoreCase(AppConst.CONTAINER_UP);
         String statussMsg = status == true? "Run" :"Stop";
         String oppStatussMsg =status != true? "Run" :"Stop";
 

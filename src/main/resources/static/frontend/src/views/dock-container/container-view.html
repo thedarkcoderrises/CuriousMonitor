@@ -3,8 +3,8 @@
 <link rel="import" href="../../../bower_components/vaadin-grid/src/vaadin-grid.html">
 <link rel="import" href="../../../bower_components/vaadin-dialog/src/vaadin-dialog.html">
 <link rel="import" href="../../../styles/shared-styles.html">
-<link rel="import" href="../../../bower_components/vaadin-combo-box/src/vaadin-combo-box.html">
 <link rel="import" href="../../../bower_components/vaadin-button/src/vaadin-button.html">
+<link rel="import" href="../../components/buttons-bar.html">
 
 <dom-module id="container-view">
     <template>
@@ -20,16 +20,18 @@
         }
     </style>
 <div style="width: 100%; height: 100%;">
- <search-bar id="search" field-placeholder="Search" <!--show-checkbox-->
+ <search-bar id="search" field-placeholder="Search">
    &gt; 
  </search-bar>
- <h3 class="header">DockerDeamon 
-  <vaadin-combo-box id="comboBox" required></vaadin-combo-box>
-  <vaadin-button id="refresh"></vaadin-button>
-  <vaadin-button id="logs"></vaadin-button>
-  <vaadin-button id="updateStatus"></vaadin-button></h3>
- <vaadin-grid id="grid" style="height:84%; width:68%"></vaadin-grid>
  <vaadin-dialog on-opened-changed="_onDialogOpen" id="dialog"></vaadin-dialog>
+ <div style="width: 100%; height: 100%;">
+  <vaadin-grid id="grid" style="height:84%; width:68%"></vaadin-grid>
+  <buttons-bar style="height:9.5%">
+   <vaadin-button id="refresh" slot="right"></vaadin-button>
+   <vaadin-button id="logs" slot="right"></vaadin-button>
+   <vaadin-button id="updateStatus" slot="right"></vaadin-button>
+  </buttons-bar>
+ </div>
 </div>
 </template>
 
