@@ -2,6 +2,7 @@ package com.tdcr.docker.backend.service;
 
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
+import com.tdcr.docker.backend.data.entity.DockImage;
 
 import java.util.List;
 import java.util.Map;
@@ -31,5 +32,12 @@ public interface DockerService {
 
     Set<String> getDockerDeamons();
 
-    void setSubscriptionToContainer(String containerId,boolean subscription);
+    void setSubscriptionToContainer(String imageId ,boolean subscription);
+
+    List<DockImage> listAllImages();
+
+    String pullImageUsingCmd(String cmd);
+
+    String removeImage(String imageId);
+
 }
