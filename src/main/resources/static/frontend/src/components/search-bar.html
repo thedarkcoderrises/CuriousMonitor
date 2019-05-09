@@ -6,6 +6,7 @@
 <link rel="import" href="../../bower_components/vaadin-text-field/src/vaadin-text-field.html">
 
 <link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../../bower_components/vaadin-combo-box/src/vaadin-combo-box.html">
 
 <dom-module id="search-bar">
   <template>
@@ -86,17 +87,18 @@
   <iron-icon icon$="[[fieldIcon]]" slot="prefix" icon="vaadin:search"></iron-icon>
  </vaadin-text-field>
  <vaadin-checkbox class="checkbox desktop" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur">
-  [[checkboxText]]
+   [[checkboxText]] 
  </vaadin-checkbox>
  <vaadin-button id="clear" class="clear-btn" theme="tertiary">
    [[clearText]] 
  </vaadin-button>
  <vaadin-button id="action" class="action-btn" theme="primary">
-  <iron-icon icon$="[[buttonIcon]]" slot="prefix"></iron-icon> [[buttonText]]
+   [[buttonText]] 
  </vaadin-button>
+ <vaadin-combo-box id="combobox" style="width:20%" placeholder="Select.."></vaadin-combo-box>
 </div>
 <vaadin-checkbox class="checkbox mobile" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur">
- [[checkboxText]]
+  [[checkboxText]] 
 </vaadin-checkbox>
 </template>
 

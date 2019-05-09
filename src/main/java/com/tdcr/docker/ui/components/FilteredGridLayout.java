@@ -3,38 +3,33 @@ package com.tdcr.docker.ui.components;
 
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
+import java.util.Set;
 @Deprecated
 public class FilteredGridLayout extends HorizontalLayout {
 
     private Grid grid;
-    private final TextField containerNameFilter;
-    private final TextField imageNameFilter;
+    private TextField textFiler;
+    private ComboBox<String> comboBox;
 
 
     public FilteredGridLayout(Grid grid) {
-        containerNameFilter = new TextField();
-        containerNameFilter.setPlaceholder("Container...");
-        containerNameFilter.addValueChangeListener(this::onContainerNameFilterTextChange);
-        containerNameFilter.setHeight("50%");
-        imageNameFilter = new TextField();
-        imageNameFilter.setPlaceholder("Image...");
-        imageNameFilter.addValueChangeListener(this::onImageNameFilterTextChange);
-        imageNameFilter.setHeight("50%");
         this.grid = grid;
     }
 
-    private void onContainerNameFilterTextChange(HasValue.ValueChangeEvent<String> event) {
-        ListDataProvider<DockContainer> dataProvider = (ListDataProvider<DockContainer>) grid.getDataProvider();
-        dataProvider.setFilter(DockContainer::getContainerName, s -> caseInsensitiveContains(s, event.getValue()));
+    public void addTextFilterToColumnHeader(String placeHolder,String heightInPercentile){
+        textFiler = new TextField();
+        textFiler.setPlaceholder(placeHolder);
+        textFiler.addValueChangeListener(this::onTextFilterTextChange);
+        textFiler.setHeight(heightInPercentile);
     }
 
-
-    private void onImageNameFilterTextChange(HasValue.ValueChangeEvent<String> event) {
+    private void onTextFilterTextChange(HasValue.ValueChangeEvent<String> event) {
         ListDataProvider<DockContainer> dataProvider = (ListDataProvider<DockContainer>) grid.getDataProvider();
         dataProvider.setFilter(DockContainer::getImageName, s -> caseInsensitiveContains(s, event.getValue()));
     }
@@ -43,11 +38,15 @@ public class FilteredGridLayout extends HorizontalLayout {
         return where.toLowerCase().contains(what.toLowerCase());
     }
 
-    public TextField getContainerNameFilter() {
-        return containerNameFilter;
+
+    public TextField getTextFiler() {
+        return textFiler;
     }
 
-    public TextField getImageNameFilter() {
-        return imageNameFilter;
+    public ComboBox<String> getComboBox(Set<String> itemSet, String place, String width) {
+        comboBox = new ComboBox<>();
+        comboBox.setItems(itemSet);
+        comboBox.setWidth(width);
+        return comboBox;
     }
 }

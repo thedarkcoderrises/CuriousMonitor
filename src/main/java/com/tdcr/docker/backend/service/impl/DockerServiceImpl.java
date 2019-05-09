@@ -3,11 +3,14 @@ package com.tdcr.docker.backend.service.impl;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
+import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.data.entity.Subscription;
 import com.tdcr.docker.backend.repositories.SubscriptionRepository;
 import com.tdcr.docker.backend.service.DockerService;
+import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.FirstObjectResultCallback;
 import com.tdcr.docker.backend.utils.LogContainerCallback;
@@ -44,8 +47,13 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public List<DockContainer> listAllContainers(String status) {
-        ListContainersCmd cmd = null;
         List<Container> lst = new ArrayList<>();
+         lst= getConatainer(status); //  docker ps -a -s -f status=${status}
+        return covertContainerData(lst);
+    }
+
+    private List<Container> getConatainer(String status) {
+        ListContainersCmd cmd = null;
         if(StringUtils.isEmpty(status)){
             cmd = dockerClient.listContainersCmd().withShowSize(true)
                     .withShowAll(true);
@@ -53,15 +61,14 @@ public class DockerServiceImpl implements DockerService {
             cmd = dockerClient.listContainersCmd().withShowSize(true)
                     .withShowAll(true).withStatusFilter(status);
         }
-         lst= cmd.exec(); //  docker ps -a -s -f status=${status}
-        return covertContainerData(lst);
+        return cmd.exec();
     }
 
     private List<DockContainer> covertContainerData(List<Container> lst) {
         List<DockContainer> list = new ArrayList<>();
         for (Container container :
                 lst) {
-           Optional<Subscription> subscription = subscriptionRepository.findById(container.getId());
+           Optional<Subscription> subscription = subscriptionRepository.findById(container.getImageId());
             list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false));
         }
         return list;
@@ -143,12 +150,63 @@ public class DockerServiceImpl implements DockerService {
     }
 
     @Override
-    public void setSubscriptionToContainer(String containerId, boolean subscription) {
-        subscriptionRepository.save(new Subscription(containerId,subscription));
+    public void setSubscriptionToContainer(String imageId , boolean subscription) {
+        subscriptionRepository.save(new Subscription(imageId,subscription));
     }
 
     @Override
     public Statistics getContainerRawStats(String containerId) {
         return getContainerStatistics(containerId);
+    }
+
+    @Override
+    public List<DockImage> listAllImages() {
+        ListImagesCmd cmd = dockerClient.listImagesCmd();
+        return covertImageData(cmd.exec());
+    }
+
+    private List<DockImage> covertImageData(List<Image> images) {
+        List<DockImage> list = new ArrayList<>();
+        List<Container> containerList = getConatainer(null);
+        for (Image image :
+                images) {
+            Optional<Subscription> subscription = subscriptionRepository.findById(
+                    image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR));
+            DockImage dockImage =new DockImage(image, subscription.isPresent()?subscription.get().isSubscribed():false);
+            list.add(dockImage);
+            int stopContainerCnt =0;
+            int runningContainerCnt = stopContainerCnt;
+            for (Container ctnr :containerList) {
+                if(ctnr.getImageId().equalsIgnoreCase(AppConst.SHA_256+dockImage.getImageId())){
+                    dockImage.setImageName(ctnr.getImage());
+                    if(ctnr.getStatus().startsWith("Up")){
+                        runningContainerCnt+=1;
+                    }else{
+                        stopContainerCnt+=1;
+                    }
+                }else if(StringUtils.isEmpty(dockImage.getImageName())){
+                    dockImage.setImageName(AppConst.EMPTY_STR);
+                }
+            }
+            dockImage.setRunningContainerCount(runningContainerCnt);
+            dockImage.setTotalContainerCount((runningContainerCnt+stopContainerCnt));
+        }
+        list.sort(new Comparator<DockImage>() {
+            @Override
+            public int compare(DockImage o1, DockImage o2) {
+                return o2.getImageName().compareTo(o1.getImageName());
+            }
+        });
+        return list;
+    }
+
+    @Override
+    public String pullImageUsingCmd(String cmd) {
+        return null;
+    }
+
+    @Override
+    public String removeImage(String imageId) {
+        return null;
     }
 }

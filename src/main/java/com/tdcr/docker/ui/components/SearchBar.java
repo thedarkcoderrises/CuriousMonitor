@@ -2,6 +2,7 @@ package com.tdcr.docker.ui.components;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -33,6 +34,9 @@ public class SearchBar extends PolymerTemplate<SearchBar.Model> {
 	@Id("action")
 	private Button actionButton;
 
+	@Id("combobox")
+	private ComboBox<String> comboBox;
+
 	public SearchBar() {
 		textField.setValueChangeMode(ValueChangeMode.EAGER);
 		ComponentUtil.addListener(textField, SearchValueChanged.class,
@@ -47,6 +51,10 @@ public class SearchBar extends PolymerTemplate<SearchBar.Model> {
 
 	public String getFilter() {
 		return textField.getValue();
+	}
+
+	public TextField getTextField() {
+		return textField;
 	}
 
 	public boolean isCheckboxChecked() {
@@ -92,5 +100,9 @@ public class SearchBar extends PolymerTemplate<SearchBar.Model> {
 		public FilterChanged(SearchBar source, boolean fromClient) {
 			super(source, fromClient);
 		}
+	}
+
+	public ComboBox<String> getComboBox() {
+		return comboBox;
 	}
 }
