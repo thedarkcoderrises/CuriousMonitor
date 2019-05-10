@@ -18,6 +18,7 @@ public class DockContainer{
     String imageId;
     String imageName;
     boolean subscription;
+    long created;
 
     public DockContainer(Container container, boolean subscribed) {
         super();
@@ -30,6 +31,7 @@ public class DockContainer{
         this.setImageId(container.getImageId());
         this.setImageName(container.getImage());
         this.setSubscription(subscribed);
+        this.setCreated(container.getCreated());
     }
 
     private String getPublicPort(ContainerPort port) {
@@ -109,5 +111,13 @@ public class DockContainer{
 
     public void setSubscription(boolean subscription) {
         this.subscription = subscription;
+    }
+
+    public long getCreated() {
+        return created;
+    }
+
+    public void setCreated(long created) {
+        this.created = created;
     }
 }

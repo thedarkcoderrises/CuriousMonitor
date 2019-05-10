@@ -44,7 +44,7 @@ public class MainView extends AbstractAppRouterLayout {
         appLayout.setBranding(new Span(AppConst.APP_NAME));
 
         if (SecurityUtils.isUserLoggedIn()) {
-            setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.CUBE.create(), AppConst.TITLE_IMAGES, AppConst.PAGE_IMAGES));
+            //setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.CUBE.create(), AppConst.TITLE_IMAGES, AppConst.PAGE_IMAGES));
             setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.CUBES.create(), AppConst.TITLE_CONTAINER, AppConst.PAGE_CONTAINERS));
             setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.LINE_BAR_CHART.create(), AppConst.TITLE_DASHBOARD, AppConst.PAGE_DASHBOARD));
             if (SecurityUtils.isAccessGranted(UserView.class)) {

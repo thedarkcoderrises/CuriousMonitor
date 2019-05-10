@@ -7,8 +7,8 @@ import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.DockImage;
-import com.tdcr.docker.backend.data.entity.Subscription;
-import com.tdcr.docker.backend.repositories.SubscriptionRepository;
+import com.tdcr.docker.backend.data.entity.ImageDetails;
+import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
@@ -33,7 +33,7 @@ public class DockerServiceImpl implements DockerService {
     DockerClient dockerClient;
 
     @Autowired
-    SubscriptionRepository subscriptionRepository;
+    ImageRepository imageRepository;
 
     @Override
     public String listRunningContainers() {
@@ -68,7 +68,7 @@ public class DockerServiceImpl implements DockerService {
         List<DockContainer> list = new ArrayList<>();
         for (Container container :
                 lst) {
-           Optional<Subscription> subscription = subscriptionRepository.findById(container.getImageId());
+           Optional<ImageDetails> subscription = imageRepository.findById(container.getImageId());
             list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false));
         }
         return list;
@@ -151,7 +151,7 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public void setSubscriptionToContainer(String imageId , boolean subscription) {
-        subscriptionRepository.save(new Subscription(imageId,subscription));
+        imageRepository.save(new ImageDetails(imageId,subscription));
     }
 
     @Override
@@ -170,9 +170,9 @@ public class DockerServiceImpl implements DockerService {
         List<Container> containerList = getConatainer(null);
         for (Image image :
                 images) {
-            Optional<Subscription> subscription = subscriptionRepository.findById(
+            Optional<ImageDetails> subscription = imageRepository.findById(
                     image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR));
-            DockImage dockImage =new DockImage(image, subscription.isPresent()?subscription.get().isSubscribed():false);
+            DockImage dockImage =new DockImage(image, subscription.isPresent()?subscription.get():null);
             list.add(dockImage);
             int stopContainerCnt =0;
             int runningContainerCnt = stopContainerCnt;
@@ -184,10 +184,18 @@ public class DockerServiceImpl implements DockerService {
                     }else{
                         stopContainerCnt+=1;
                     }
+                    Date date = new Date(ctnr.getCreated()*1000);
+                    if(dockImage.getContainerEntry().containsKey(date.getMonth())){
+                        int count = dockImage.getContainerEntry().get(date.getMonth());
+                        dockImage.getContainerEntry().put(date.getMonth(),count+1);
+                    }else{
+                        dockImage.getContainerEntry().put(date.getMonth(),1);
+                    }
                 }else if(StringUtils.isEmpty(dockImage.getImageName())){
                     dockImage.setImageName(AppConst.EMPTY_STR);
                 }
             }
+
             dockImage.setRunningContainerCount(runningContainerCnt);
             dockImage.setTotalContainerCount((runningContainerCnt+stopContainerCnt));
         }

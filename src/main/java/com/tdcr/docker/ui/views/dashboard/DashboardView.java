@@ -1,12 +1,15 @@
 package com.tdcr.docker.ui.views.dashboard;
 
 import com.tdcr.docker.backend.data.entity.DockImage;
+import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.DataUtil;
 import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.MainView;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
@@ -23,6 +26,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,7 +34,9 @@ import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 @Tag("dashboard-view")
 @HtmlImport("src/views/dashboard/dashboard-view.html")
@@ -40,6 +46,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 
 	private static final String[] MONTH_LABELS = new String[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
 			"Aug", "Sep", "Oct", "Nov", "Dec"};
+	private static  final List yearInitLst = Arrays.asList(0,0,0,0,0,0,0,0,0,0,0,0);
 
 	@Id("search")
 	private SearchBar searchBar;
@@ -57,7 +64,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 	private DashboardCounterLabel totalActiveContainers;
 
 	@Id("deliveriesThisMonth")
-	private Chart totalContsinerChart;
+	private Chart totalContainerChart;
 //
 //	@Id("deliveriesThisYear")
 //	private Chart deliveriesThisYearChart;
@@ -83,16 +90,42 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 
 	@PostConstruct
 	void init() {
-		totalIncCnt.setData("Total Incidents","","10");
-		totalIncOpenCnt.setData("Open Incidents","","2");
-		totalIncCloseCnt.setData("Closed Incidents", "Next Release 10/05", "8");
-		totalActiveContainers.setData("Running Containers", "Out of 5","2");
-		initTodayCountSolidgaugeChart();
+		initIncClosedCountSolidgaugeChart();
+		updateChartDetails(null);
 		populateArtErrorRateChart();
-		populateTotalContainerRunningCharts();
+		initContainerCountChart();
 		initGridDetails();
 		setupSearchBar();
 	}
+
+	private void updateChartDetails(DockImage selectedImage) {
+		String value = AppConst.ZERO_STR;
+		if (selectedImage == null || selectedImage.getImageDetails()== null){
+			totalIncCnt.setData("Total Incidents","",value);
+			totalIncOpenCnt.setData("Open Incidents","",value);
+			totalIncCloseCnt.setData("Closed Incidents", "Next Release: ", value);
+			totalActiveContainers.setData("Running Containers", "Out of "+
+							((selectedImage!=null) ?selectedImage.getTotalContainerCount()+"":value),
+							(selectedImage!=null) ?selectedImage.getRunningContainerCount()+"":value);
+			updateCircleChart(null);
+		}else if(selectedImage.getImageDetails()!=null){
+			totalIncCnt.setData("Total Incidents","",
+					selectedImage.getImageDetails().getTotalIncidents());
+			totalIncOpenCnt.setData("Open Incidents","",
+					selectedImage.getImageDetails().getTotalOpenIncidents());
+			totalIncCloseCnt.setData("Closed Incidents",
+					"Next Release: ",
+					selectedImage.getImageDetails().getTotalCloseIncidents());
+			totalActiveContainers.setData("Running Containers",
+					"Out of"+selectedImage.getRunningContainerCount()
+							+"/"+selectedImage.getTotalContainerCount(),
+					(selectedImage.getRunningContainerCount())+AppConst.EMPTY_STR);
+			updateCircleChart(selectedImage.getImageDetails());
+		}
+		updateContainerCountChart(selectedImage);
+
+	}
+
 
 	private void populateArtErrorRateChart() {
 		Configuration conf = artErrorRateGraph.getConfiguration();
@@ -110,10 +143,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 		for(int k=0;k<2;k++)
 		for (int j = 0; j<2;j++)
 		for (int i = 0; i<12;i++) {
-			double randomDouble = Math.random();
-			randomDouble = randomDouble * 30 + 1;
-			int randomInt = (int) randomDouble;
-			salesPerMonth[k][j][i] = randomInt;
+			salesPerMonth[k][j][i] = 0;
 		}
 
 		for(int k=0;k<2;k++){
@@ -128,23 +158,47 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 	}
 
 
-	private void populateTotalContainerRunningCharts() {
+	private void initContainerCountChart() {
 		LocalDate today = LocalDate.now();
 
-		Configuration containerConf = totalContsinerChart.getConfiguration();
+		Configuration containerConf = totalContainerChart.getConfiguration();
 		configureColumnChart(containerConf);
+		containerConf.setTitle("Containers in " + today.getYear());
+		containerConf.getxAxis().setCategories(MONTH_LABELS);
+		containerConf.addSeries(new ListSeries("per Month", yearInitLst));
+	}
 
-		List<Number> totalContaiersList = Arrays.asList(1,4,5,5,5,4,2,2);
-		String[] deliveriesThisMonthCategories = IntStream.rangeClosed(1, totalContaiersList.size())
-				.mapToObj(String::valueOf).toArray(String[]::new);
+	private void updateContainerCountChart(DockImage selectedImage) {
 
-		containerConf.setTitle("Containers in " + DataUtil.getFullMonthName(today));
-		containerConf.getxAxis().setCategories(deliveriesThisMonthCategories);
-		containerConf.addSeries(new ListSeries("per Day", totalContaiersList));
+		if(selectedImage != null){
+			Map<Integer,Integer> containerCntMap = selectedImage.getContainerEntry();
+			runWhileAttached(totalContainerChart, new Command() {
+				@Override
+				public void execute() {
+					ListSeries ls = (ListSeries) totalContainerChart.getConfiguration().getSeries().get(0);
+					for (int i=0;i<12;i++) {
+						int value= containerCntMap.get(i)==null? 0:containerCntMap.get(i);
+						ls.updatePoint(i,value);
+					}
+				}
+			},1000);
+		}else{
+			runWhileAttached(totalContainerChart, new Command() {
+				@Override
+				public void execute() {
+					ListSeries ls = (ListSeries) totalContainerChart.getConfiguration().getSeries().get(0);
+					for (int i=0;i<12;i++) {
+						ls.updatePoint(i,0);
+					}
+				}
+			},1000);
+		}
+
 	}
 	private void configureColumnChart(Configuration conf) {
 		conf.getChart().setType(ChartType.COLUMN);
-		conf.getChart().setBorderRadius(4);
+		conf.getChart().setBorderRadius(3);
+		conf.getyAxis().setTickInterval(1);
 
 		conf.getxAxis().setTickInterval(1);
 		conf.getxAxis().setMinorTickLength(0);
@@ -156,41 +210,76 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 	}
 
 
-	private void initTodayCountSolidgaugeChart() {
+	private void initIncClosedCountSolidgaugeChart() {
 		Configuration configuration = totalIncCntChart.getConfiguration();
 		configuration.getChart().setType(ChartType.SOLIDGAUGE);
+
 		configuration.setTitle("");
 		configuration.getTooltip().setEnabled(false);
+		configuration.getChart().setReflow(true);
 
 		configuration.getyAxis().setMin(0);
-		configuration.getyAxis().setMax(10);
+		configuration.getyAxis().setMax(1);
 		configuration.getyAxis().getLabels().setEnabled(false);
 
 		PlotOptionsSolidgauge opt = new PlotOptionsSolidgauge();
 		opt.getDataLabels().setEnabled(false);
-		PlotOptionsWaterfall pow = new PlotOptionsWaterfall();
 		configuration.setPlotOptions(opt);
 
-		DataSeriesItemWithRadius point = new DataSeriesItemWithRadius();
-		point.setY(8);
-		point.setInnerRadius("100%");
-		point.setRadius("110%");
-		configuration.setSeries(new DataSeries(point));
+//		DataSeriesItemWithRadius point = new DataSeriesItemWithRadius();
+//		point.setY(0);
+//		point.setInnerRadius("100%");
+//		point.setRadius("110%");
+//		configuration.setSeries(new DataSeries(point));
+		configuration.setSeries(new ListSeries("",0));
 
-		Pane pane = configuration.getPane();
-		pane.setStartAngle(0);
-		pane.setEndAngle(360);
-
-		Background background = new Background();
-		background.setShape(BackgroundShape.ARC);
-		background.setInnerRadius("100%");
-		background.setOuterRadius("110%");
-		pane.setBackground(background);
 	}
+
+
+	private void updateCircleChart(ImageDetails imageDetails) {
+		Configuration configuration = totalIncCntChart.getConfiguration();
+		ListSeries ls = (ListSeries) configuration.getSeries().get(0);
+		runWhileAttached(totalIncCntChart, new Command() {
+			@Override
+			public void execute() {
+				if(imageDetails!=null){
+					configuration.fireAxesRescaled(configuration.getyAxis(),
+							0,Integer.valueOf(imageDetails.getTotalIncidents()),true,true);
+					ls.updatePoint(0,Integer.valueOf(imageDetails.getTotalCloseIncidents()));
+				}else{
+					configuration.fireAxesRescaled(configuration.getyAxis(),
+							0,	1,true,true);
+					ls.updatePoint(0,0);
+				}
+
+			}
+		},1000);
+	}
+
+	public static void runWhileAttached(final Component component,
+										final Command task, final int interval) {
+		// Until reliable push available in our demo servers
+		UI.getCurrent().setPollInterval(interval);
+
+		final Thread thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+						Future<Void> future = component.getUI().get().access(task);
+						future.get();
+				} catch (Exception e) {
+				}
+			}
+		};
+		thread.start();
+	}
+
 
 	private void initGridDetails() {
 		addGridColumns();
-//		initDataProvider();
+		grid.addSelectionListener(e ->{
+			updateChartDetails(getSelectedRow());
+		});
 	}
 
 	private void initDataProvider() {
@@ -237,6 +326,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 		searchBar.getActionButton().setIcon(VaadinIcon.REFRESH.create());
 		searchBar.getActionButton().addClickListener(e ->{
 			initDataProvider();
+			updateChartDetails(getSelectedRow());
 		});
 		searchBar.addSearchValueChangeListener(e ->
 				dataProvider.setFilter(DockImage::getImageName,
@@ -254,4 +344,12 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 		});
 	}
 
+
+	private DockImage getSelectedRow() {
+		Set selectedItems = grid.getSelectedItems();
+		if(selectedItems.isEmpty()){
+			return null;
+		}
+		return (DockImage) selectedItems.toArray()[0];
+	}
 }

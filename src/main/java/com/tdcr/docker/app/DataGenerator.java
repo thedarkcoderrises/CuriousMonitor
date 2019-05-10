@@ -1,7 +1,7 @@
 package com.tdcr.docker.app;
 
-import com.tdcr.docker.backend.data.entity.Subscription;
-import com.tdcr.docker.backend.repositories.SubscriptionRepository;
+import com.tdcr.docker.backend.data.entity.ImageDetails;
+import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.repositories.UserRepository;
 import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.User;
@@ -20,14 +20,14 @@ public class DataGenerator implements HasLogger {
 
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
-	private SubscriptionRepository subscriptionRepository;
+	private ImageRepository imageRepository;
 
 	@Autowired
-	public DataGenerator( UserRepository userRepository,
-                         PasswordEncoder passwordEncoder,SubscriptionRepository subscriptionRepository) {
+	public DataGenerator(UserRepository userRepository,
+                         PasswordEncoder passwordEncoder, ImageRepository imageRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
-		this.subscriptionRepository = subscriptionRepository;
+		this.imageRepository = imageRepository;
 	}
 
 	@PostConstruct
@@ -45,9 +45,12 @@ public class DataGenerator implements HasLogger {
 	}
 
 	private void setSocatSubscription() {
-		subscriptionRepository.save(
-				new Subscription("e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b",
-						true));
+		ImageDetails imgDtl = new ImageDetails("e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b",
+				true);
+		imgDtl.setTotalCloseIncidents(5);
+		imgDtl.setTotalOpenIncidents(2);
+		imageRepository.save(imgDtl
+				);
 	}
 
 

@@ -5,6 +5,8 @@ import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
 
 import javax.persistence.Id;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DockImage{
 
@@ -17,15 +19,19 @@ public class DockImage{
     boolean subscription;
     int runningContainerCount;
     int totalContainerCount;
+    ImageDetails imageDetails;
+    Map<Integer,Integer> containerEntry = new HashMap<>();
 
     public DockImage(){}
 
-    public DockImage(Image image, boolean subscribed) {
+    public DockImage(Image image, ImageDetails imageDetails) {
         this.imageId =image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR);
         this.size = ComputeStats.calculateSize(image.getSize());
         this.virtualSize = ComputeStats.calculateSize(image.getVirtualSize());
         this.versions =image.getRepoTags();
-        this.setSubscription(subscribed);
+        this.imageDetails = imageDetails;
+        if(imageDetails != null) setSubscription(imageDetails.isSubscribed());
+
     }
 
     public String getImageId() {
@@ -52,7 +58,7 @@ public class DockImage{
         return subscription;
     }
 
-    public void setSubscription(boolean subscription) {
+    private void setSubscription(boolean subscription) {
         this.subscription = subscription;
     }
 
@@ -74,5 +80,17 @@ public class DockImage{
 
     public void setTotalContainerCount(int totalContainerCount) {
         this.totalContainerCount = totalContainerCount;
+    }
+
+    public ImageDetails getImageDetails() {
+        return imageDetails;
+    }
+
+    public Map<Integer, Integer> getContainerEntry() {
+        return containerEntry;
+    }
+
+    public void setContainerEntry(Map<Integer, Integer> containerEntry) {
+        this.containerEntry = containerEntry;
     }
 }
