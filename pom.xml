@@ -142,8 +142,8 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <!-- Build an executable JAR -->
+                <!--<plugin>
+                    &lt;!&ndash; Build an executable JAR &ndash;&gt;
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.1.0</version>
@@ -156,16 +156,16 @@
                             </manifest>
                         </archive>
                     </configuration>
-                </plugin>
+                </plugin>-->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
-                <plugin>
+               <!-- <plugin>
                     <groupId>com.vaadin</groupId>
                     <artifactId>vaadin-maven-plugin</artifactId>
                     <version>${vaadin.version}</version>
-                </plugin>
+                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>
