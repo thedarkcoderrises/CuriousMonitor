@@ -1,6 +1,6 @@
 server.port: 8081
 # This is a workaround for https://github.org/peimari/tab/as/main/layout/example/spring/issues/381
-spring.servlet.multipart.enabled: false
+#spring.servlet.multipart.enabled: false
 
 
 dockerDaemonMap:
