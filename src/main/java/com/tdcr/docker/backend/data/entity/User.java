@@ -8,15 +8,16 @@ import java.util.Objects;
 @Entity(name="UserInfo")
 public class User extends AbstractEntity {
 
-	@NotEmpty
-	@Email
-	@Size(max = 255)
-	@Column(unique = true)
-	private String email;
 
 	@NotNull
 	@Size(min = 4, max = 255)
 	private String passwordHash;
+
+//	@NotEmpty
+	@Email
+	@Size(max = 255)
+	@Column(unique = true)
+	private String email;
 
 	@NotBlank
 	@Size(max = 255)

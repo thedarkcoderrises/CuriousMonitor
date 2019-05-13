@@ -1,6 +1,8 @@
 package com.tdcr.docker.app;
 
+import com.tdcr.docker.backend.data.entity.ContainerDetails;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
+import com.tdcr.docker.backend.repositories.ContainerRepository;
 import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.repositories.UserRepository;
 import com.tdcr.docker.backend.data.Role;
@@ -21,13 +23,15 @@ public class DataGenerator implements HasLogger {
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
 	private ImageRepository imageRepository;
+	private ContainerRepository containerRepository;
 
 	@Autowired
 	public DataGenerator(UserRepository userRepository,
-                         PasswordEncoder passwordEncoder, ImageRepository imageRepository) {
+                         PasswordEncoder passwordEncoder, ImageRepository imageRepository,ContainerRepository containerRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.imageRepository = imageRepository;
+		this.containerRepository = containerRepository;
 	}
 
 	@PostConstruct
@@ -42,15 +46,28 @@ public class DataGenerator implements HasLogger {
 		createChecker(userRepository,passwordEncoder);
 		setSocatSubscription();
 		getLogger().info("Generated demo data");
+		getContainer();
 	}
+
+	private void getContainer() {
+		System.out.println(containerRepository.findAll());
+	}
+
 
 	private void setSocatSubscription() {
 		ImageDetails imgDtl = new ImageDetails("e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b",
-				true);
+				true,null,4);
+				//new ContainerDetails("529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40","e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b","name",1));
 		imgDtl.setTotalCloseIncidents(5);
 		imgDtl.setTotalOpenIncidents(2);
-		imageRepository.save(imgDtl
-				);
+		imageRepository.save(imgDtl);
+
+		ImageDetails imgDtl2 = new ImageDetails("2760d6ae57c103b15b4c886eeb5080d969a85dfb144f0dd7fd7e5fc01ce3fee8",
+				true,null,4);
+		//new ContainerDetails("529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40","e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b","name",1));
+		imgDtl2.setTotalCloseIncidents(3);
+		imgDtl2.setTotalOpenIncidents(0);
+		imageRepository.save(imgDtl2);
 	}
 
 

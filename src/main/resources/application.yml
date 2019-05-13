@@ -8,3 +8,8 @@ dockerDaemonMap:
   AWS_DD: ""
 
 kafka.url: localhost:9092
+
+
+application:
+  message: Hey there!
+  appname: I'm theDarkCoderRises from DockerWorld.

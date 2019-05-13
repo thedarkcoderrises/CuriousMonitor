@@ -76,9 +76,9 @@ public class DockerServiceImpl implements DockerService {
 
 
     @Override
-    public String inspectOnContainerId(String containerId) {
+    public InspectContainerResponse inspectOnContainerId(String containerId) {
          InspectContainerResponse container = dockerClient.inspectContainerCmd(containerId).exec();
-         return container.toString();
+         return container;
     }
 
     @Override
@@ -89,6 +89,8 @@ public class DockerServiceImpl implements DockerService {
     private Statistics getContainerStatistics(String containerId){
          Statistics stats = null;
         try {
+            InspectContainerCmd cmd =dockerClient.inspectContainerCmd("");
+            cmd.exec();
             StatsCmd statsCmd =dockerClient.statsCmd(containerId);
             FirstObjectResultCallback<Statistics> resultCallback = new FirstObjectResultCallback<>();
             stats = statsCmd.exec(resultCallback).waitForObject();
@@ -151,7 +153,7 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public void setSubscriptionToContainer(String imageId , boolean subscription) {
-        imageRepository.save(new ImageDetails(imageId,subscription));
+        imageRepository.save(new ImageDetails(imageId,subscription,null,4));
     }
 
     @Override
@@ -216,5 +218,17 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public String removeImage(String imageId) {
         return null;
+    }
+
+    @Override
+    public InspectImageResponse inspectOnImageId(String imageId) {
+        InspectImageResponse image = dockerClient.inspectImageCmd(imageId).exec();
+        return image;
+    }
+
+    @Override
+    public ImageDetails getImageDetailsStats(String imageId) {
+        Optional<ImageDetails> opt = imageRepository.findById(imageId);
+        return opt.isPresent()? opt.get():null;
     }
 }
