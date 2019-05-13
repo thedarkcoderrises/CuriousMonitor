@@ -1,5 +1,7 @@
 package com.tdcr.docker.ui.views.dashboard;
 
+import com.tdcr.docker.app.HasLogger;
+import com.tdcr.docker.backend.data.entity.ContainerDetails;
 import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.service.DockerService;
@@ -9,7 +11,6 @@ import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.MainView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
@@ -32,17 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
 
 @Tag("dashboard-view")
 @HtmlImport("src/views/dashboard/dashboard-view.html")
 @Route(value = AppConst.PAGE_DASHBOARD, layout = MainView.class)
 @PageTitle(AppConst.TITLE_DASHBOARD)
-public class DashboardView extends PolymerTemplate<TemplateModel> {
+public class DashboardView extends PolymerTemplate<TemplateModel> implements HasLogger {
 
 	private static final String[] MONTH_LABELS = new String[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
 			"Aug", "Sep", "Oct", "Nov", "Dec"};
@@ -70,7 +68,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 //	private Chart deliveriesThisYearChart;
 //
 	@Id("yearlySalesGraph")
-	private Chart artErrorRateGraph;
+	private Chart errorRateGraph;
 //
 	@Id("dockimageGrid")
 	private Grid<DockImage> grid;
@@ -86,16 +84,53 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 
 	private ListDataProvider<DockImage> dataProvider;
 
+	private Map<String,ListSeries> containerErrorMap = new HashMap<>();
+
 	ComboBox<String> dockerCombobox;
+
+	private volatile boolean exitRunningLoop = true;
 
 	@PostConstruct
 	void init() {
 		initIncClosedCountSolidgaugeChart();
 		updateChartDetails(null);
-		populateArtErrorRateChart();
+		initErrorRateChart();
 		initContainerCountChart();
 		initGridDetails();
 		setupSearchBar();
+	}
+
+	private void initErrorRateChart() {
+		Configuration conf = errorRateGraph.getConfiguration();
+		conf.getChart().setBorderRadius(3);
+		conf.setTitle("Error Rate");
+//		conf.getxAxis().setVisible(true);
+		conf.getyAxis().setTickInterval(1);
+//		conf.getxAxis().setTickInterval(1);
+		conf.getyAxis().getTitle().setText("Exceptions per sec");
+
+		Tooltip tooltip = new Tooltip();
+		// Customize tooltip formatting
+		tooltip.setShared(true);
+		tooltip.setValueSuffix(" exception");
+		conf.setTooltip(tooltip);
+
+//		Legend legend = new Legend();
+//		legend.setLayout(LayoutDirection.HORIZONTAL);
+//		legend.setAlign(HorizontalAlign.LEFT);
+//		legend.setFloating(true);
+//		legend.setVerticalAlign(VerticalAlign.TOP);
+//		legend.setX(150);
+//		legend.setY(100);
+//		conf.setLegend(legend);
+
+		XAxis xAxis = new XAxis();
+		xAxis.setCategories(new String[] {"t-4","t-3","t-2","t-1","t"});
+		PlotBand plotBand = new PlotBand(4.5, 6.5);
+		plotBand.setZIndex(1);
+		xAxis.setPlotBands(plotBand);
+		conf.addxAxis(xAxis);
+
 	}
 
 	private void updateChartDetails(DockImage selectedImage) {
@@ -123,40 +158,125 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 			updateCircleChart(selectedImage.getImageDetails());
 		}
 		updateContainerCountChart(selectedImage);
-
 	}
 
 
-	private void populateArtErrorRateChart() {
-		Configuration conf = artErrorRateGraph.getConfiguration();
+	private void updateErrorRateConfigChart(DockImage selectedImage) {
+		Configuration conf = errorRateGraph.getConfiguration();
 		conf.getChart().setType(ChartType.AREASPLINE);
-		conf.getChart().setBorderRadius(3);
-
-		conf.setTitle("Average Response & Error Rate");
-
-		conf.getxAxis().setVisible(false);
-		conf.getxAxis().setCategories(MONTH_LABELS);
-
-		conf.getyAxis().getTitle().setText(null);
-
-		Number[][][] salesPerMonth = new Number[2][2][12];
-		for(int k=0;k<2;k++)
-		for (int j = 0; j<2;j++)
-		for (int i = 0; i<12;i++) {
-			salesPerMonth[k][j][i] = 0;
-		}
-
-		for(int k=0;k<2;k++){
-			String label = "C"+(k+1)+"-ART";
-			for (int i = 0; i < 2; i++) {
-				if(i == 1){
-					label ="C"+(k+1)+"-ERROR";
+		if(selectedImage != null && selectedImage.getImageDetails()!= null && !selectedImage.getImageDetails().getContainerDetails().isEmpty()){
+			int containerCnt = selectedImage.getRunningContainerCount();
+			int xitteration =5;
+			Number[][] errorPerSec = new Number[containerCnt][xitteration];
+			for (int j = 0; j<containerCnt;j++)
+				for (int i = 0; i<xitteration;i++) {
+					errorPerSec[j][i] = 0;
 				}
-				conf.addSeries(new ListSeries(label,salesPerMonth[k][i]));
+			for(int k=0;k<containerCnt;k++){
+				String containerName = selectedImage.getImageDetails().getContainerDetails().get(k).getName();
+				if(!containerErrorMap.containsKey(containerName)){
+					ListSeries series = new ListSeries( containerName,errorPerSec[k]);
+					containerErrorMap.put(containerName,series);
+					conf.addSeries(series);
+					exitRunningLoop = true;
+				}else{
+					resetErrorRateGraph(containerErrorMap.get(containerName));
+					continue;
+				}
 			}
+			exitRunningLoop = false;
+		}else{
+			clearErrorRateGrapf(errorRateGraph);
+			exitRunningLoop = true;
 		}
 	}
 
+	private void updateErrorRateChart(DockImage selectedImage) {
+		updateErrorRateConfigChart(selectedImage);
+		Configuration conf = errorRateGraph.getConfiguration();
+		if(selectedImage!=null &&
+				selectedImage.getImageDetails()!=null && !selectedImage.getImageDetails().getContainerDetails().isEmpty()){
+			Command cmd = new Command() {
+					@Override
+					public void execute() {
+						try {
+							for (ContainerDetails cd :
+									selectedImage.getImageDetails().getContainerDetails()) {
+								ListSeries ls = containerErrorMap.get(cd.getName());
+								int index = selectedImage.getErrorIndex();
+								int resetIndex =ls.getData().length-1;
+								int errorCount = 0;
+								if (index == resetIndex) {
+									ImageDetails imgDtl = dockerService.getImageDetailsStats(selectedImage.getImageId());
+									if(imgDtl.getContainerDetails().isEmpty()) return ;
+									ContainerDetails containerDetails = imgDtl.getContainerDetails().get(0);
+									errorCount = containerDetails.getErrorCount();
+									selectedImage.setErrorIndex(index - 1);
+								}else if(index >0){
+									errorCount = ((Number) ls.getData()[index + 1]).intValue();
+									selectedImage.setErrorIndex(index - 1);
+								}else if (index == 0) {
+									errorCount = ((Number) ls.getData()[index + 1]).intValue();
+									selectedImage.setErrorIndex(resetIndex);
+								}
+								ls.updatePoint(index, errorCount);
+							}
+						} catch (Exception e) {}
+					}
+				};
+			selectedImage.setErrorIndex(4);
+			runWhileAttached(errorRateGraph, cmd,1000,true,this,"errorRateGraph");
+		}
+	}
+
+	private void clearErrorRateGrapf(Chart errorRateGraph) {
+		for (Series series :
+				errorRateGraph.getConfiguration().getSeries()) {
+			resetErrorRateGraph((ListSeries) series);
+		}
+	}
+
+	private void resetErrorRateGraph(ListSeries ls) {
+		Command resetCmd = new Command() {
+			@Override
+			public void execute() {
+				try {
+					int maxIndex =ls.getData().length-1;
+					int errorCount = 0;
+					for(int index = maxIndex ; index>=0;index--)
+						ls.updatePoint(index, errorCount);
+					ls.setName(AppConst.EMPTY_STR);
+				} catch (Exception e) {}
+			}
+		};
+		runWhileAttached(errorRateGraph, resetCmd,0,false,this,"errorRateGraph");
+	}
+
+	public void runWhileAttached(final Component component,
+										final Command task, final int interval, boolean updateComponentAgain, DashboardView dashboardView, String componentName) {
+		// Until reliable push available in our demo servers
+//		UI.getCurrent().setPollInterval(interval);
+		final Thread thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					do {
+						Future<Void> future = component.getUI().get().access(task);
+						future.get();
+						Thread.sleep(interval);
+					} while (component.getUI() != null && updateComponentAgain && !exitRunningLoop);
+					if(updateComponentAgain){
+						dashboardView.getLogger().info("Exiting runWhileAttached loop for chart: {}", componentName);
+					}else{
+						dashboardView.getLogger().info("No runWhileAttached loop set for chart: {}", componentName);
+					}
+
+				} catch (Exception e) {
+				}
+			}
+		};
+		thread.start();
+	}
 
 	private void initContainerCountChart() {
 		LocalDate today = LocalDate.now();
@@ -181,7 +301,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 						ls.updatePoint(i,value);
 					}
 				}
-			},1000);
+			},0,false, this, "totalContainerChart");
 		}else{
 			runWhileAttached(totalContainerChart, new Command() {
 				@Override
@@ -191,7 +311,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 						ls.updatePoint(i,0);
 					}
 				}
-			},1000);
+			},0,false, this, "totalContainerChart");
 		}
 
 	}
@@ -253,32 +373,14 @@ public class DashboardView extends PolymerTemplate<TemplateModel> {
 				}
 
 			}
-		},1000);
+		},0,false, this, "totalIncCntChart");
 	}
-
-	public static void runWhileAttached(final Component component,
-										final Command task, final int interval) {
-		// Until reliable push available in our demo servers
-		UI.getCurrent().setPollInterval(interval);
-
-		final Thread thread = new Thread() {
-			@Override
-			public void run() {
-				try {
-						Future<Void> future = component.getUI().get().access(task);
-						future.get();
-				} catch (Exception e) {
-				}
-			}
-		};
-		thread.start();
-	}
-
 
 	private void initGridDetails() {
 		addGridColumns();
 		grid.addSelectionListener(e ->{
 			updateChartDetails(getSelectedRow());
+			updateErrorRateChart(getSelectedRow());
 		});
 	}
 

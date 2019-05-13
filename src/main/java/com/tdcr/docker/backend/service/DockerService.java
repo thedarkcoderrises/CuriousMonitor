@@ -1,8 +1,11 @@
 package com.tdcr.docker.backend.service;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.DockImage;
+import com.tdcr.docker.backend.data.entity.ImageDetails;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +19,9 @@ public interface DockerService {
 
     List<DockContainer> listAllContainers(String status);
 
-    String inspectOnContainerId(String containerId);
+    InspectContainerResponse inspectOnContainerId(String containerId);
+
+    InspectImageResponse inspectOnImageId(String imageId);
 
     Statistics getContainerRawStats(String containerId);
 
@@ -39,5 +44,7 @@ public interface DockerService {
     String pullImageUsingCmd(String cmd);
 
     String removeImage(String imageId);
+
+    ImageDetails getImageDetailsStats(String imageId);
 
 }

@@ -16,6 +16,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.navigator.PushStateNavigation;
 
 import static com.tdcr.docker.backend.utils.AppConst.VIEWPORT;
 
@@ -45,7 +46,9 @@ public class MainView extends AbstractAppRouterLayout {
 
         if (SecurityUtils.isUserLoggedIn()) {
             //setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.CUBE.create(), AppConst.TITLE_IMAGES, AppConst.PAGE_IMAGES));
-            setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.CUBES.create(), AppConst.TITLE_CONTAINER, AppConst.PAGE_CONTAINERS));
+            setMenuItem(appLayoutMenu,
+                    new AppLayoutMenuItem(VaadinIcon.CUBES.create(),
+                            AppConst.TITLE_CONTAINER, AppConst.PAGE_CONTAINERS));
             setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.LINE_BAR_CHART.create(), AppConst.TITLE_DASHBOARD, AppConst.PAGE_DASHBOARD));
             if (SecurityUtils.isAccessGranted(UserView.class)) {
                 setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.USER.create(), AppConst.TITLE_USERS, AppConst.PAGE_USERS));

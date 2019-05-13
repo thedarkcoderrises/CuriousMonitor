@@ -19,6 +19,7 @@ public class DockImage{
     boolean subscription;
     int runningContainerCount;
     int totalContainerCount;
+    int errorIndex;
     ImageDetails imageDetails;
     Map<Integer,Integer> containerEntry = new HashMap<>();
 
@@ -92,5 +93,13 @@ public class DockImage{
 
     public void setContainerEntry(Map<Integer, Integer> containerEntry) {
         this.containerEntry = containerEntry;
+    }
+
+    public int getErrorIndex() {
+        return errorIndex;
+    }
+
+    public void setErrorIndex(int errorIndex) {
+        this.errorIndex = errorIndex;
     }
 }
