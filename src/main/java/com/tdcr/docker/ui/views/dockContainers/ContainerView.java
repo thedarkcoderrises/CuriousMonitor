@@ -31,10 +31,12 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.ui.renderers.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -170,6 +172,9 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             }
         })).setHeader("Status").setWidth("150px");
         grid.addColumn(DockContainer::getPort).setHeader("ExposedPort").setWidth("150px");
+
+        grid.addColumn(TemplateRenderer.<DockContainer> of("<a href=\"[[item.link]]\">logs</a>\n")
+                .withProperty("link", DockContainer::getURL));
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
     }
 

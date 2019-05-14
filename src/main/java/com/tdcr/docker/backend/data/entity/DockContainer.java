@@ -2,6 +2,9 @@ package com.tdcr.docker.backend.data.entity;
 
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerPort;
+import com.tdcr.docker.backend.utils.AppConst;
+import com.vaadin.server.ExternalResource;
+import com.vaadin.ui.Link;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.Id;
@@ -19,8 +22,9 @@ public class DockContainer{
     String imageName;
     boolean subscription;
     long created;
+    String elkURL;
 
-    public DockContainer(Container container, boolean subscribed) {
+    public DockContainer(Container container, boolean subscribed,String elkURL) {
         super();
         this.setContainerId(container.getId());
         this.setContainerName(container.getNames()[0]);
@@ -32,6 +36,7 @@ public class DockContainer{
         this.setImageName(container.getImage());
         this.setSubscription(subscribed);
         this.setCreated(container.getCreated());
+        this.setElkURL(elkURL);
     }
 
     private String getPublicPort(ContainerPort port) {
@@ -119,5 +124,17 @@ public class DockContainer{
 
     public void setCreated(long created) {
         this.created = created;
+    }
+
+    public String getElkURL() {
+        return elkURL;
+    }
+
+    public void setElkURL(String elkURL) {
+        this.elkURL = elkURL;
+    }
+
+    public static String getURL(DockContainer container) {
+      return container.getElkURL();
     }
 }
