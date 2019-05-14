@@ -27,7 +27,7 @@ public interface DockerService {
 
     Map<String,String> getContainerStats(String containerId);
 
-    String updateContainerStatus(String containerId, boolean status);
+    String updateContainerStatus(DockContainer container, boolean status);
 
     void updateDockerClient(String dockerDaemonName);
 

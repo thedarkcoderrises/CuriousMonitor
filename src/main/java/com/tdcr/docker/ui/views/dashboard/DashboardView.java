@@ -264,6 +264,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 						Future<Void> future = component.getUI().get().access(task);
 						future.get();
 						Thread.sleep(interval);
+						dashboardView.getLogger().info("runWhileAttached loop for chart: {}", componentName);
 					} while (component.getUI() != null && updateComponentAgain && !exitRunningLoop);
 					if(updateComponentAgain){
 						dashboardView.getLogger().info("Exiting runWhileAttached loop for chart: {}", componentName);

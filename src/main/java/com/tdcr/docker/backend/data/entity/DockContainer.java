@@ -54,7 +54,11 @@ public class DockContainer{
     }
 
     public String getImageId() {
-        return imageId;
+        if(!StringUtils.isEmpty(imageId)){
+            return imageId.replace(AppConst.SHA_256,AppConst.EMPTY_STR);
+        }else{
+            return imageId;
+        }
     }
 
     public void setImageId(String imageId) {

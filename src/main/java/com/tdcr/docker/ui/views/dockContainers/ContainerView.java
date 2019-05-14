@@ -275,7 +275,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 isDirty(),
                 containerMsg,
                 () ->{
-                   String containerID = dockerService.updateContainerStatus(container.getContainerId(),status);
+                   String containerID = dockerService.updateContainerStatus(container,status);
                    if(container.getContainerId().equals(containerID)){
                        Notification.show("Saved status");
                        refreshBtn.click();

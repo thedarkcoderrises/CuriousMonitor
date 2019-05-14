@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Statistics;
+import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class DockerServiceImpl implements DockerService {
+public class DockerServiceImpl implements DockerService, HasLogger {
 
     private static Logger LOG = LoggerFactory.getLogger(DockerServiceImpl.class);
 
@@ -38,6 +40,9 @@ public class DockerServiceImpl implements DockerService {
 
     @Value("${elk.url:\"\"}")
     String elkURL;
+
+    @Autowired
+    KafkaTemplate kafkaTemplate;
 
     @Override
     public String listRunningContainers() {
@@ -105,22 +110,35 @@ public class DockerServiceImpl implements DockerService {
     }
 
     @Override
-    public String updateContainerStatus(String containerId, boolean status) {
+    public String updateContainerStatus(DockContainer container , boolean status) {
 
+        String cmdStr = "Stopped";
         try{
             if(status){
-                StartContainerCmd cmd = dockerClient.startContainerCmd(containerId);
+                StartContainerCmd cmd = dockerClient.startContainerCmd(container.getContainerId());
                 cmd.exec();
+                cmdStr = "Running";
             }else{
-                StopContainerCmd cmd = dockerClient.stopContainerCmd(containerId);
+                StopContainerCmd cmd = dockerClient.stopContainerCmd(container.getContainerId());
                 cmd.exec();
             }
         }catch (Exception e){
             //TODO
             return null;
         }
+        notifyConttainerStatus(container,cmdStr);
+        return container.getContainerId();
+    }
 
-        return containerId;
+    private void notifyConttainerStatus(DockContainer container, String cmdStr) {
+
+        ImageDetails imageDetails = getImageDetailsStats(container.getImageId());
+        if(imageDetails == null) return;
+        if(imageDetails.isSubscribed()){
+            kafkaTemplate.send("CuriousNotifyTopic",""+System.currentTimeMillis(),
+                    String.format("Container %s status now: %s",container.getContainerName(),cmdStr));
+            getLogger().info("RaiseIncident Event sent");
+        }
     }
 
     @Override
