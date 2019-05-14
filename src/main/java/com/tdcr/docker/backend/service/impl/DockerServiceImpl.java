@@ -17,6 +17,7 @@ import com.tdcr.docker.backend.utils.LogContainerCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -34,6 +35,9 @@ public class DockerServiceImpl implements DockerService {
 
     @Autowired
     ImageRepository imageRepository;
+
+    @Value("${elk.url:\"\"}")
+    String elkURL;
 
     @Override
     public String listRunningContainers() {
@@ -69,7 +73,7 @@ public class DockerServiceImpl implements DockerService {
         for (Container container :
                 lst) {
            Optional<ImageDetails> subscription = imageRepository.findById(container.getImageId());
-            list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false));
+            list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false,elkURL));
         }
         return list;
     }

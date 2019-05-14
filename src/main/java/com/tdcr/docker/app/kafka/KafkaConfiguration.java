@@ -34,6 +34,7 @@ public class KafkaConfiguration implements HasLogger {
 
         return new DefaultKafkaProducerFactory(config);
     }
+/*
 
     private Map<String, Object> consumerConfig() {
         Map<String, Object> config = new HashMap();
@@ -56,6 +57,7 @@ public class KafkaConfiguration implements HasLogger {
         factory.setConsumerFactory(cosnumerCreateFactory());
         return factory;
     }
+*/
 
 
     @Bean

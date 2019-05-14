@@ -6,7 +6,7 @@ public class AppConst {
     public static final Locale APP_LOCALE = Locale.US;
     public static final String PAGE_TITLE = "Curious";
     public static final String VIEWPORT = "width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes";
-    public static final String PAGE_CONTAINERS = "ui/containers";
+    public static final String PAGE_CONTAINERS = "containers";
     public static final String TITLE_ACCESS_DENIED = "Access denied";
     public static final String TITLE_NOT_FOUND = "Page was not found";
     public static final String TITLE_CONTAINER = "Containers";
