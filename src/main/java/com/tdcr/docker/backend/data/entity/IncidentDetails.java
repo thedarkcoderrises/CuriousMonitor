@@ -1,18 +1,17 @@
 package com.tdcr.docker.backend.data.entity;
 
+import java.util.Map;
+
 public class IncidentDetails {
 
     String imageId;
 
-    String containerId;
-
     String containerName;
 
-    String incDescription;
+    Map<String, Integer> incDescription;
 
-    public IncidentDetails(String imageId, String containerId, String containerName, String incDescription) {
+    public IncidentDetails(String imageId, String containerName, Map<String, Integer> incDescription) {
         this.imageId = imageId;
-        this.containerId = containerId;
         this.containerName = containerName;
         this.incDescription = incDescription;
     }
@@ -25,14 +24,6 @@ public class IncidentDetails {
         this.imageId = imageId;
     }
 
-    public String getContainerId() {
-        return containerId;
-    }
-
-    public void setContainerId(String containerId) {
-        this.containerId = containerId;
-    }
-
     public String getContainerName() {
         return containerName;
     }
@@ -41,11 +32,11 @@ public class IncidentDetails {
         this.containerName = containerName;
     }
 
-    public String getIncDescription() {
+    public Map<String, Integer> getIncDescription() {
         return incDescription;
     }
 
-    public void setIncDescription(String incDescription) {
+    public void setIncDescription(Map<String, Integer> incDescription) {
         this.incDescription = incDescription;
     }
 }

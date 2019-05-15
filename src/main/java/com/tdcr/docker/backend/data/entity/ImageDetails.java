@@ -9,6 +9,7 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Entity(name="ImageDetails")
@@ -32,6 +33,10 @@ public class ImageDetails implements Serializable {
     private int totalCloseIncidents;
 
     private int thresholdErrCnt;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String,Integer> errorMap;
+
 
 
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
@@ -98,6 +103,14 @@ public class ImageDetails implements Serializable {
 
     public void setThresholdErrCnt(int thresholdErrCnt) {
         this.thresholdErrCnt = thresholdErrCnt;
+    }
+
+    public Map<String, Integer> getErrorMap() {
+        return errorMap;
+    }
+
+    public void setErrorMap(Map<String, Integer> errorMap) {
+        this.errorMap = errorMap;
     }
 
     @Override

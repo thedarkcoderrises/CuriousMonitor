@@ -30,6 +30,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
@@ -82,9 +83,12 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 	@Autowired
 	DockerService dockerService;
 
+	@Value("${x-axis:5}")
+	int xAxis;
+
 	private ListDataProvider<DockImage> dataProvider;
 
-	private Map<String,ListSeries> containerErrorMap = new HashMap<>();
+	private Map<String,ListSeries> errorMap = new HashMap<>();
 
 	ComboBox<String> dockerCombobox;
 
@@ -102,33 +106,24 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 
 	private void initErrorRateChart() {
 		Configuration conf = errorRateGraph.getConfiguration();
+		conf.getChart().setType(ChartType.AREASPLINE);
 		conf.getChart().setBorderRadius(3);
 		conf.setTitle("Error Rate");
-//		conf.getxAxis().setVisible(true);
 		conf.getyAxis().setTickInterval(1);
-//		conf.getxAxis().setTickInterval(1);
 		conf.getyAxis().getTitle().setText("Exceptions per sec");
 
 		Tooltip tooltip = new Tooltip();
-		// Customize tooltip formatting
 		tooltip.setShared(true);
 		tooltip.setValueSuffix(" exception");
 		conf.setTooltip(tooltip);
 
-//		Legend legend = new Legend();
-//		legend.setLayout(LayoutDirection.HORIZONTAL);
-//		legend.setAlign(HorizontalAlign.LEFT);
-//		legend.setFloating(true);
-//		legend.setVerticalAlign(VerticalAlign.TOP);
-//		legend.setX(150);
-//		legend.setY(100);
-//		conf.setLegend(legend);
-
 		XAxis xAxis = new XAxis();
-		xAxis.setCategories(new String[] {"t-4","t-3","t-2","t-1","t"});
-		PlotBand plotBand = new PlotBand(4.5, 6.5);
-		plotBand.setZIndex(1);
-		xAxis.setPlotBands(plotBand);
+		String xarray[] = new String[this.xAxis];
+		int temp = (this.xAxis-1);
+		for(int i = 0;i <this.xAxis;i++){
+			xarray[i] = "t"+(i==temp? "":"-"+(temp-i));
+		}
+		xAxis.setCategories(xarray);
 		conf.addxAxis(xAxis);
 
 	}
@@ -163,54 +158,55 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 
 	private void updateErrorRateConfigChart(DockImage selectedImage) {
 		Configuration conf = errorRateGraph.getConfiguration();
-		conf.getChart().setType(ChartType.AREASPLINE);
-		if(selectedImage != null && selectedImage.getImageDetails()!= null && !selectedImage.getImageDetails().getContainerDetails().isEmpty()){
-			int containerCnt = selectedImage.getRunningContainerCount();
-			int xitteration =5;
-			Number[][] errorPerSec = new Number[containerCnt][xitteration];
-			for (int j = 0; j<containerCnt;j++)
-				for (int i = 0; i<xitteration;i++) {
+		clearErrorRateGrapf(errorRateGraph);
+		exitRunningLoop = true;
+		if(selectedImage != null &&
+				selectedImage.getImageDetails()!= null ){
+			ImageDetails imageDetails = dockerService.getImageDetailsStats(selectedImage.getImageId());
+			if(imageDetails.getErrorMap().isEmpty()) return;
+			int errorType = imageDetails.getErrorMap().size();
+			Number[][] errorPerSec = new Number[errorType][xAxis];
+			for (int j = 0; j<errorType;j++)
+				for (int i = 0; i<xAxis;i++) {
 					errorPerSec[j][i] = 0;
 				}
-			for(int k=0;k<containerCnt;k++){
-				String containerName = selectedImage.getImageDetails().getContainerDetails().get(k).getName();
-				if(!containerErrorMap.containsKey(containerName)){
-					ListSeries series = new ListSeries( containerName,errorPerSec[k]);
-					containerErrorMap.put(containerName,series);
+			int k=0;
+			for (String errorTypeKey:
+					imageDetails.getErrorMap().keySet()) {
+				if(!errorMap.containsKey(errorTypeKey)){
+					ListSeries series = new ListSeries( errorTypeKey,errorPerSec[k]);
+					errorMap.put(errorTypeKey,series);
 					conf.addSeries(series);
 					exitRunningLoop = true;
 				}else{
-					resetErrorRateGraph(containerErrorMap.get(containerName));
+					resetErrorRateGraph(errorMap.get(errorTypeKey));
 					continue;
 				}
+				k++;
 			}
 			exitRunningLoop = false;
-		}else{
-			clearErrorRateGrapf(errorRateGraph);
-			exitRunningLoop = true;
 		}
 	}
 
 	private void updateErrorRateChart(DockImage selectedImage) {
 		updateErrorRateConfigChart(selectedImage);
-		Configuration conf = errorRateGraph.getConfiguration();
 		if(selectedImage!=null &&
-				selectedImage.getImageDetails()!=null && !selectedImage.getImageDetails().getContainerDetails().isEmpty()){
+				selectedImage.getImageDetails()!=null){
+			ImageDetails imageDetails = dockerService.getImageDetailsStats(selectedImage.getImageId());
+			if(imageDetails.getErrorMap().isEmpty()) return;
 			Command cmd = new Command() {
 					@Override
 					public void execute() {
 						try {
-							for (ContainerDetails cd :
-									selectedImage.getImageDetails().getContainerDetails()) {
-								ListSeries ls = containerErrorMap.get(cd.getName());
+							for (String errorTypeKey:
+									imageDetails.getErrorMap().keySet()) {
+								ListSeries ls = errorMap.get(errorTypeKey);
 								int index = selectedImage.getErrorIndex();
 								int resetIndex =ls.getData().length-1;
 								int errorCount = 0;
 								if (index == resetIndex) {
-									ImageDetails imgDtl = dockerService.getImageDetailsStats(selectedImage.getImageId());
-									if(imgDtl.getContainerDetails().isEmpty()) return ;
-									ContainerDetails containerDetails = imgDtl.getContainerDetails().get(0);
-									errorCount = containerDetails.getErrorCount();
+									ImageDetails imgDtl = dockerService.getImageDetailsStats(imageDetails.getImageId());
+									errorCount = imgDtl.getErrorMap().get(errorTypeKey);
 									selectedImage.setErrorIndex(index - 1);
 								}else if(index >0){
 									errorCount = ((Number) ls.getData()[index + 1]).intValue();
@@ -224,8 +220,8 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 						} catch (Exception e) {}
 					}
 				};
-			selectedImage.setErrorIndex(4);
-			runWhileAttached(errorRateGraph, cmd,1000,true,this,"errorRateGraph");
+			selectedImage.setErrorIndex(xAxis-1);
+			runWhileAttached(errorRateGraph, cmd,500,true,this,"errorRateGraph");
 		}
 	}
 

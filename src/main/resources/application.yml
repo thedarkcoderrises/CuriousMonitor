@@ -15,3 +15,7 @@ application:
   appname: I'm theDarkCoderRises from DockerWorld.
 
 elk.url: https://www.elastic.co/elk-stack
+
+thresholdErrCnt: 5
+
+x-axis: 5

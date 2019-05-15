@@ -9,6 +9,7 @@ import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.User;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.PostConstruct;
@@ -24,6 +25,9 @@ public class DataGenerator implements HasLogger {
 	private PasswordEncoder passwordEncoder;
 	private ImageRepository imageRepository;
 	private ContainerRepository containerRepository;
+
+	@Value("${thresholdErrCnt:4}")
+	int thresholdErrCnt;
 
 	@Autowired
 	public DataGenerator(UserRepository userRepository,
@@ -56,14 +60,14 @@ public class DataGenerator implements HasLogger {
 
 	private void setSocatSubscription() {
 		ImageDetails imgDtl = new ImageDetails("e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b",
-				true,null,4);
+				true,null,thresholdErrCnt);
 				//new ContainerDetails("529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40","e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b","name",1));
 		imgDtl.setTotalCloseIncidents(5);
 		imgDtl.setTotalOpenIncidents(2);
 		imageRepository.save(imgDtl);
 
 		ImageDetails imgDtl2 = new ImageDetails("2760d6ae57c103b15b4c886eeb5080d969a85dfb144f0dd7fd7e5fc01ce3fee8",
-				true,null,4);
+				true,null,thresholdErrCnt);
 		//new ContainerDetails("529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40","e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b","name",1));
 		imgDtl2.setTotalCloseIncidents(3);
 		imgDtl2.setTotalOpenIncidents(0);
