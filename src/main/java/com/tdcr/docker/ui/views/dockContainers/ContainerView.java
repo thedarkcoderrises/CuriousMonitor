@@ -1,8 +1,8 @@
 package com.tdcr.docker.ui.views.dockContainers;
 
 import com.github.dockerjava.api.model.Statistics;
+import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.DockContainer;
-import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
@@ -25,6 +25,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -34,13 +36,14 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.ui.renderers.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * A Designer generated component for the container-view template.
@@ -52,7 +55,7 @@ import java.util.Set;
 @HtmlImport("src/views/dock-container/container-view.html")
 @Route(value = AppConst.PAGE_CONTAINERS, layout = MainView.class)
 @PageTitle(AppConst.TITLE_CONTAINER)
-public class ContainerView extends PolymerTemplate<TemplateModel> implements EntityView<DockContainer> {
+public class ContainerView extends PolymerTemplate<TemplateModel> implements EntityView<DockContainer>, HasLogger {
 
     @Id("search")
     private SearchBar searchBar;
@@ -75,9 +78,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     @Id("refresh")
     private Button refreshBtn;
 
-    @Id("logs")
-    private Button containerStats;
-
     @Id("updateStatus")
     private Button updateContainerStatus;
 
@@ -99,10 +99,6 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             grid.setDataProvider(dataProvider);
         });
 
-        containerStats.setIcon(VaadinIcon.PIE_CHART.create());
-        containerStats.addClickListener(e ->{
-            containerStatsubWindow();
-        });
 
         updateContainerStatus.setIcon(VaadinIcon.POWER_OFF.create());
         updateContainerStatus.addClickListener(e ->{
@@ -175,7 +171,9 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
         grid.addColumn(TemplateRenderer.<DockContainer> of("<a href=\"[[item.link]]\">logs</a>\n")
                 .withProperty("link", DockContainer::getURL));
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.setDetailsVisibleOnClick(true);
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(container -> {return showSelectedContainerStats(container);}));
     }
 
 
@@ -189,60 +187,8 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         DockContainer container = getSelectedRow();
         if(container == null || !AppConst.CONTAINER_UP.equalsIgnoreCase(container.getStatus())) return;
         dialog.setOpened(true);
-        dialog.add(getBoard(container));
     }
 
-    private Component[] getBoard(DockContainer container) {
-        final Chart memGauge = new Chart(ChartType.SOLIDGAUGE);
-        Statistics stats = dockerService.getContainerRawStats(container.getContainerId());
-        Number memUsage = ((Number)stats.getMemoryStats().get("max_usage"));
-        Number memLimit = ((Number) stats.getMemoryStats().get("limit"));
-        Configuration configuration = memGauge.getConfiguration();
-        Pane pane = configuration.getPane();
-        pane.setCenter(new String[] {"50%", "50%"});
-        pane.setStartAngle(-90);
-        pane.setEndAngle(90);
-
-        Background paneBackground = new Background();
-        paneBackground.setInnerRadius("60%");
-        paneBackground.setOuterRadius("100%");
-        paneBackground.setShape(BackgroundShape.ARC);
-        pane.setBackground(paneBackground);
-
-        YAxis yAxis = configuration.getyAxis();
-        yAxis.setTickAmount(2);
-        yAxis.setTitle("Memory");
-        yAxis.setMinorTickInterval("null");
-        yAxis.getTitle().setY(-50);
-        yAxis.getLabels().setY(16);
-        yAxis.setMin(0);
-        PlotOptionsSolidgauge plotOptionsSolidgauge = new PlotOptionsSolidgauge();
-
-        DataLabels dataLabels = plotOptionsSolidgauge.getDataLabels();
-        dataLabels.setY(5);
-        dataLabels.setUseHTML(true);
-        configuration.setPlotOptions(plotOptionsSolidgauge);
-
-        DataSeries series = new DataSeries("Memory Usage");
-        DataSeriesItem item = new DataSeriesItem();
-        item.setClassName("myClassName");
-        yAxis.setMax(memLimit);
-        item.setY(memUsage);
-        DataLabels dataLabelsSeries = new DataLabels();
-        final String dataLabelsStr= "<br><div style=\"text-align:center\"><span style=\"font-size:25px;"
-                + "color:black' + '\">%s</span><br/>"
-                + "<span style=\"font-size:12px;color:silver\">r/w</span></div>";
-        dataLabelsSeries.setFormat(String.format(dataLabelsStr,ComputeStats.calculateSize(memUsage.longValue(),true)));
-        item.setDataLabels(dataLabelsSeries);
-        series.add(item);
-        configuration.addSeries(series);
-        DashboardCounterLabel networkIO = new DashboardCounterLabel().init();
-        networkIO.setData("NET I/O","",ComputeStats.calcNetworkStats(stats));
-
-        DashboardCounterLabel memusageInPercentile = new DashboardCounterLabel().init();
-        memusageInPercentile.setData("Current Memory Usage%","", ComputeStats.computeMemoryInPercent(stats));
-        return new Component[]{memGauge,networkIO.getTitle(),networkIO.getValue(),memusageInPercentile.getTitle(),memusageInPercentile.getValue()};
-    }
 
     private DockContainer getSelectedRow() {
         Set selectedItems = grid.getSelectedItems();
@@ -347,6 +293,85 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 getConfirmDialog().addConfirmListener(e -> onOk.run());
         final Registration cancelRegistration =
                 getConfirmDialog().addCancelListener(e -> onCancel.run());
+    }
+
+    private Component showSelectedContainerStats(DockContainer container) {
+        HorizontalLayout layout = new HorizontalLayout();
+
+        if(container.getStatus().equalsIgnoreCase("stopped")){
+            DashboardCounterLabel emptyStat = new DashboardCounterLabel().init();
+            emptyStat.setData("Container is not up!","","");
+            layout.add(emptyStat);
+        }else {
+
+            Statistics stats = dockerService.getContainerRawStats(container.getContainerId());
+            Number memUsage = ((Number)stats.getMemoryStats().get("max_usage"));
+            Number memLimit = ((Number) stats.getMemoryStats().get("limit"));
+
+            DashboardCounterLabel networkIO = new DashboardCounterLabel().init();
+            networkIO.setData("NET I/O","",ComputeStats.calcNetworkStats(stats));
+
+            DashboardCounterLabel memusageInPercentile = new DashboardCounterLabel().init();
+            memusageInPercentile.setData("Current Memory Usage","", ComputeStats.computeMemoryInPercent(stats));
+
+            DashboardCounterLabel memUsagePerLimit = new DashboardCounterLabel().init();
+            memUsagePerLimit.setData("MEM USGAE / LIMIT", "", AppConst.EMPTY_STR+
+                    ComputeStats.calculateSize(memUsage.longValue(),true)+"/"+
+                    ComputeStats.calculateSize(memLimit.longValue(),true));
+
+            VerticalLayout networkvl = new VerticalLayout();
+            networkvl.add(networkIO.getValue(),networkIO.getTitle());
+            VerticalLayout memUsagevl = new VerticalLayout();
+            memUsagevl.add(memusageInPercentile.getValue(),memusageInPercentile.getTitle());
+            VerticalLayout memUsageLmtvl = new VerticalLayout();
+            memUsageLmtvl.add(memUsagePerLimit.getValue(),memUsagePerLimit.getTitle());
+            layout.add(new Component[]{networkvl,memUsagevl,memUsageLmtvl});
+
+           Command cmd = new Command(){
+               @Override
+               public void execute() {
+                   if(grid.isDetailsVisible(container)){
+                       Statistics stats = dockerService.getContainerRawStats(container.getContainerId());
+                       networkIO.setData("NET I/O","",ComputeStats.calcNetworkStats(stats));
+
+                       Number memUsage = ((Number)stats.getMemoryStats().get("max_usage"));
+                       Number memLimit = ((Number) stats.getMemoryStats().get("limit"));
+                       memUsagePerLimit.setData("MEM USGAE / LIMIT", "", AppConst.EMPTY_STR+
+                               ComputeStats.calculateSize(memUsage.longValue(),true)+"/"+
+                               ComputeStats.calculateSize(memLimit.longValue(),true));
+                   }
+               }
+           };
+
+           runWhileAttached(layout,cmd,500,"memUsage",container);
+        }
+        return layout;
+    }
+
+    public void runWhileAttached(final Component component,
+                                 final Command task, final int interval,
+                                 String componentName,DockContainer container) {
+        final Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    do {
+                        Future<Void> future = component.getUI().get().access(task);
+                        future.get();
+                        Thread.sleep(interval);
+                        getLogger().info("runWhileAttached loop for chart: {}", componentName);
+                    } while (grid.isDetailsVisible(container));
+                    if(grid.isDetailsVisible(container)){
+                        getLogger().info("Exiting runWhileAttached loop for chart: {}", componentName);
+                    }else{
+                        getLogger().info("No runWhileAttached loop set for chart: {}", componentName);
+                    }
+
+                } catch (Exception e) {
+                }
+            }
+        };
+        thread.start();
     }
 
 }

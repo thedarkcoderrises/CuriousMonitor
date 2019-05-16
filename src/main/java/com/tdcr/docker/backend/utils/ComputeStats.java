@@ -45,7 +45,7 @@ public class ComputeStats {
             val = size; suffix ="B";
         }
         if(attachSuffix){
-           df2.format(val).concat(suffix);
+          return df2.format(val).concat(suffix);
         }
         return df2.format(val);
     }

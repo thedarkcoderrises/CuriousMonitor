@@ -257,8 +257,6 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 
 	public void runWhileAttached(final Component component,
 										final Command task, final int interval, boolean updateComponentAgain, DashboardView dashboardView, String componentName) {
-		// Until reliable push available in our demo servers
-//		UI.getCurrent().setPollInterval(interval);
 		final Thread thread = new Thread() {
 			@Override
 			public void run() {
