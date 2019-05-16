@@ -22,28 +22,32 @@ public class ComputeStats {
 
     public static String getMemory(Statistics stats, String param) {
         long size = ((Number) stats.getMemoryStats().get(param)).longValue();
-        String hrSize = calculateSize(size);
+        String hrSize = calculateSize(size,true);
         return hrSize;
     }
 
-    public static String calculateSize(long size) {
-        String hrSize = EMPTY_STRING;
+    public static String calculateSize(long size, boolean attachSuffix) {
         double k = size /1024;
         double m = (k)/1024;
         double g = (m)/1024;
         double t = (g)/1024;
+        String suffix;
+        double val;
         if (t > 1) {
-            hrSize = df2.format(t).concat("TB");
+            val = t; suffix ="TB";
         } else if (g > 1) {
-            hrSize = df2.format(g).concat("GB");
+            val = g; suffix ="GB";
         } else if (m > 1) {
-            hrSize = df2.format(m).concat("MB");
+            val = m; suffix ="MB";
         } else if (k >1 ){
-            hrSize = df2.format(k).concat("KB");
+            val = k; suffix ="KB";
         }else {
-            hrSize = df2.format(size).concat("B");
+            val = size; suffix ="B";
         }
-        return hrSize;
+        if(attachSuffix){
+           df2.format(val).concat(suffix);
+        }
+        return df2.format(val);
     }
 
     public static String calcCPU(Statistics stats) {
@@ -59,7 +63,7 @@ public class ComputeStats {
     public static String calcNetworkStats(Statistics stats) {
         int rxSize = ((Number)((Map)stats.getNetworks().get("eth0")).get("rx_bytes")).intValue();
         int txSize = ((Number)((Map)stats.getNetworks().get("eth0")).get("tx_bytes")).intValue();
-        return calculateSize(rxSize)+"/"+calculateSize(txSize);
+        return calculateSize(rxSize,true)+"/"+calculateSize(txSize,true);
     }
 
     public static Map<String,String> computeStats(Statistics stats) {

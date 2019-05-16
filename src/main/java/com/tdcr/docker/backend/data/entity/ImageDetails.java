@@ -65,8 +65,8 @@ public class ImageDetails implements Serializable {
         return locked;
     }
 
-    public String getTotalIncidents() {
-        return  (totalIncidents = this.totalOpenIncidents+ this.totalCloseIncidents)+ AppConst.EMPTY_STR;
+    public int getTotalIncidents() {
+        return  (totalIncidents = this.totalOpenIncidents+ this.totalCloseIncidents);
     }
 
     public void setTotalIncidents(int totalIncidents) {

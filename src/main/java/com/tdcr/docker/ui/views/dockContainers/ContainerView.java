@@ -232,7 +232,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         final String dataLabelsStr= "<br><div style=\"text-align:center\"><span style=\"font-size:25px;"
                 + "color:black' + '\">%s</span><br/>"
                 + "<span style=\"font-size:12px;color:silver\">r/w</span></div>";
-        dataLabelsSeries.setFormat(String.format(dataLabelsStr,ComputeStats.calculateSize(memUsage.longValue())));
+        dataLabelsSeries.setFormat(String.format(dataLabelsStr,ComputeStats.calculateSize(memUsage.longValue(),true)));
         item.setDataLabels(dataLabelsSeries);
         series.add(item);
         configuration.addSeries(series);
@@ -240,7 +240,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         networkIO.setData("NET I/O","",ComputeStats.calcNetworkStats(stats));
 
         DashboardCounterLabel memusageInPercentile = new DashboardCounterLabel().init();
-        memusageInPercentile.setData("Current Usage%","", ComputeStats.computeMemoryInPercent(stats));
+        memusageInPercentile.setData("Current Memory Usage%","", ComputeStats.computeMemoryInPercent(stats));
         return new Component[]{memGauge,networkIO.getTitle(),networkIO.getValue(),memusageInPercentile.getTitle(),memusageInPercentile.getValue()};
     }
 

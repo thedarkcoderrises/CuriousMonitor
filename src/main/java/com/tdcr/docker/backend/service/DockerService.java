@@ -2,6 +2,7 @@ package com.tdcr.docker.backend.service;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectImageResponse;
+import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.DockImage;
@@ -46,5 +47,7 @@ public interface DockerService {
     String removeImage(String imageId);
 
     ImageDetails getImageDetailsStats(String imageId);
+
+    Info getDockerInfo();
 
 }

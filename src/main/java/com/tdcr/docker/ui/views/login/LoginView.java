@@ -3,7 +3,7 @@ package com.tdcr.docker.ui.views.login;
 import com.tdcr.docker.app.security.SecurityUtils;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.ui.components.AppCookieConsent;
-import com.tdcr.docker.ui.views.MainView;
+import com.tdcr.docker.ui.views.dockContainers.ContainerView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.login.LoginI18n;
@@ -53,7 +53,7 @@ public class LoginView extends VerticalLayout
         if (SecurityUtils.isUserLoggedIn()) {
             // Needed manually to change the URL because of https://github.com/vaadin/flow/issues/4189
             UI.getCurrent().getPage().getHistory().replaceState(null, "");
-            beforeEnterEvent.rerouteTo(String.valueOf(MainView.class));
+            beforeEnterEvent.rerouteTo(ContainerView.class);
         }
     }
 

@@ -1,11 +1,12 @@
 package com.tdcr.docker.ui.views.dashboard;
 
+import com.github.dockerjava.api.model.Info;
 import com.tdcr.docker.app.HasLogger;
-import com.tdcr.docker.backend.data.entity.ContainerDetails;
 import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
+import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.DataUtil;
 import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.MainView;
@@ -47,6 +48,8 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 			"Aug", "Sep", "Oct", "Nov", "Dec"};
 	private static  final List yearInitLst = Arrays.asList(0,0,0,0,0,0,0,0,0,0,0,0);
 
+	private static final String[] dockerInfoKeys = new String[] {"Containers", "Running", "Paused", "Stopped", "Images", "CPUs","Memory(Gb)"};
+
 	@Id("search")
 	private SearchBar searchBar;
 
@@ -74,8 +77,8 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 	@Id("dockimageGrid")
 	private Grid<DockImage> grid;
 //
-//	@Id("monthlyProductSplit")
-//	private Chart monthlyProductSplit;
+	@Id("monthlyProductSplit")
+	private Chart dockerInfoBarChart;
 
 	@Id("todayCountChart")
 	private Chart totalIncCntChart;
@@ -90,6 +93,8 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 
 	private Map<String,ListSeries> errorMap = new HashMap<>();
 
+	private Map<String,ListSeries> dockerInfoMap = new HashMap<>();
+
 	ComboBox<String> dockerCombobox;
 
 	private volatile boolean exitRunningLoop = true;
@@ -102,7 +107,9 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		initContainerCountChart();
 		initGridDetails();
 		setupSearchBar();
+		initDockerInfo();
 	}
+
 
 	private void initErrorRateChart() {
 		Configuration conf = errorRateGraph.getConfiguration();
@@ -140,7 +147,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 			updateCircleChart(null);
 		}else if(selectedImage.getImageDetails()!=null){
 			totalIncCnt.setData("Total Incidents","",
-					selectedImage.getImageDetails().getTotalIncidents());
+					selectedImage.getImageDetails().getTotalIncidents()+AppConst.EMPTY_STR);
 			totalIncOpenCnt.setData("Open Incidents","",
 					selectedImage.getImageDetails().getTotalOpenIncidents());
 			totalIncCloseCnt.setData("Closed Incidents",
@@ -342,12 +349,6 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		PlotOptionsSolidgauge opt = new PlotOptionsSolidgauge();
 		opt.getDataLabels().setEnabled(false);
 		configuration.setPlotOptions(opt);
-
-//		DataSeriesItemWithRadius point = new DataSeriesItemWithRadius();
-//		point.setY(0);
-//		point.setInnerRadius("100%");
-//		point.setRadius("110%");
-//		configuration.setSeries(new DataSeries(point));
 		configuration.setSeries(new ListSeries("",0));
 
 	}
@@ -438,6 +439,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 				Notification.show("Inavlid action!");
 			} else {
 				dockerService.updateDockerClient(e.getValue());
+				updateData(e.getValue());
 				searchBar.getActionButton().click();
 			}
 		});
@@ -450,5 +452,68 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 			return null;
 		}
 		return (DockImage) selectedItems.toArray()[0];
+	}
+
+	private void initDockerInfo() {
+
+		Configuration config = dockerInfoBarChart.getConfiguration();
+		config.setTitle("Docker Info");
+		dockerInfoBarChart.getConfiguration().getChart().setType(ChartType.COLUMN);
+
+		List<Series> lst = new ArrayList();
+		for (String dockerKeys :
+				dockerInfoKeys) {
+			ListSeries ls =new ListSeries(dockerKeys,Arrays.asList(0));
+			lst.add(ls);
+			dockerInfoMap.put(dockerKeys,ls);
+		}
+		config.setSeries(lst);
+		XAxis x = new XAxis();
+		x.setCrosshair(new Crosshair());
+		x.setCategories("");
+		config.addxAxis(x);
+
+		YAxis y = new YAxis();
+		y.setMin(0);
+		y.setTitle("Count");
+		config.addyAxis(y);
+
+
+		PlotOptionsArea plotOptions = new PlotOptionsArea();
+		config.setPlotOptions(plotOptions);
+
+		Tooltip tooltip = new Tooltip();
+		tooltip.setShared(true);
+		config.setTooltip(tooltip);
+
+	}
+
+	void updateData(String dockerDaemon){
+		Configuration conf = dockerInfoBarChart.getConfiguration();
+		runWhileAttached(dockerInfoBarChart, new Command() {
+			@Override
+			public void execute() {
+				Info dockerInfo = dockerService.getDockerInfo();
+				for (String dockerKey:
+					 dockerInfoMap.keySet()) {
+					ListSeries ls = dockerInfoMap.get(dockerKey);
+					switch (dockerKey){
+						case "Containers": ls.updatePoint(0,dockerInfo.getContainers());
+							continue;
+						case "Running": ls.updatePoint(0,dockerInfo.getContainersRunning());
+							continue;
+						case "Paused": ls.updatePoint(0,dockerInfo.getContainersPaused());
+							continue;
+						case "Stopped": ls.updatePoint(0,dockerInfo.getContainersStopped());continue;
+						case "Images": ls.updatePoint(0,dockerInfo.getImages());continue;
+						case "CPUs": ls.updatePoint(0,dockerInfo.getNCPU());continue;
+						case "Memory(Gb)": ls.updatePoint(0,
+								Math.round(Double.valueOf(ComputeStats.calculateSize(dockerInfo.getMemTotal(),false))));continue;
+					}
+				}
+
+				dockerInfoBarChart.getConfiguration().setSubTitle("Source: "+dockerDaemon);
+			}
+		},0,false,this,"dockerInfoBarChart");
 	}
 }

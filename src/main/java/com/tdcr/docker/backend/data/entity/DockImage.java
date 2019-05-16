@@ -27,8 +27,8 @@ public class DockImage{
 
     public DockImage(Image image, ImageDetails imageDetails) {
         this.imageId =image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR);
-        this.size = ComputeStats.calculateSize(image.getSize());
-        this.virtualSize = ComputeStats.calculateSize(image.getVirtualSize());
+        this.size = ComputeStats.calculateSize(image.getSize(),true);
+        this.virtualSize = ComputeStats.calculateSize(image.getVirtualSize(),true);
         this.versions =image.getRepoTags();
         this.imageDetails = imageDetails;
         if(imageDetails != null) setSubscription(imageDetails.isSubscribed());

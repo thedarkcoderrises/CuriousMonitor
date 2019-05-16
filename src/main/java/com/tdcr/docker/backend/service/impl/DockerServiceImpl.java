@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.DockContainer;
@@ -98,8 +99,6 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     private Statistics getContainerStatistics(String containerId){
          Statistics stats = null;
         try {
-            InspectContainerCmd cmd =dockerClient.inspectContainerCmd("");
-            cmd.exec();
             StatsCmd statsCmd =dockerClient.statsCmd(containerId);
             FirstObjectResultCallback<Statistics> resultCallback = new FirstObjectResultCallback<>();
             stats = statsCmd.exec(resultCallback).waitForObject();
@@ -226,7 +225,8 @@ public class DockerServiceImpl implements DockerService, HasLogger {
         list.sort(new Comparator<DockImage>() {
             @Override
             public int compare(DockImage o1, DockImage o2) {
-                return o2.getImageName().compareTo(o1.getImageName());
+                return
+                        o2.getImageName().compareTo(o1.getImageName());
             }
         });
         return list;
@@ -252,5 +252,11 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     public ImageDetails getImageDetailsStats(String imageId) {
         Optional<ImageDetails> opt = imageRepository.findById(imageId);
         return opt.isPresent()? opt.get():null;
+    }
+
+    @Override
+    public Info getDockerInfo() {
+        InfoCmd cmd= dockerClient.infoCmd();
+       return cmd.exec();
     }
 }
