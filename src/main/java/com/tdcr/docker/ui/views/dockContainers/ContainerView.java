@@ -325,7 +325,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             VerticalLayout memUsageLmtvl = new VerticalLayout();
             memUsageLmtvl.add(memUsagePerLimit.getValue(),memUsagePerLimit.getTitle());
             layout.add(new Component[]{networkvl,memUsagevl,memUsageLmtvl});
-
+            layout.addClassName("layout-with-border");
            Command cmd = new Command(){
                @Override
                public void execute() {
