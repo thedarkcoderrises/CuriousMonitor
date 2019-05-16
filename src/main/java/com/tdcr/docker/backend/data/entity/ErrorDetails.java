@@ -2,15 +2,14 @@ package com.tdcr.docker.backend.data.entity;
 
 import java.util.Map;
 
-public class IncidentDetails {
+public class ErrorDetails {
 
     String imageId;
-
     String containerName;
-
     Map<String, Integer> incDescription;
 
-    public IncidentDetails(String imageId, String containerName, Map<String, Integer> incDescription) {
+
+    public ErrorDetails(String imageId, String containerName, Map<String, Integer> incDescription) {
         this.imageId = imageId;
         this.containerName = containerName;
         this.incDescription = incDescription;
@@ -39,4 +38,5 @@ public class IncidentDetails {
     public void setIncDescription(Map<String, Integer> incDescription) {
         this.incDescription = incDescription;
     }
+
 }

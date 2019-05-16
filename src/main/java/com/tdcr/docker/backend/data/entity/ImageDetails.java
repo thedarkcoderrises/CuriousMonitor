@@ -1,16 +1,15 @@
 package com.tdcr.docker.backend.data.entity;
 
 import com.tdcr.docker.backend.utils.AppConst;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Entity(name="ImageDetails")
 public class ImageDetails implements Serializable {
@@ -24,9 +23,11 @@ public class ImageDetails implements Serializable {
     @NotNull
     private boolean isSubscribed;
 
-    private boolean locked = false;
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<String> dockerDaemonList;
 
-    private int totalIncidents;
+    private boolean locked = false;
 
     private int totalOpenIncidents;
 
@@ -42,12 +43,16 @@ public class ImageDetails implements Serializable {
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
     private List<ContainerDetails> containerDetails;
 
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "imageDetails", cascade = CascadeType.ALL)
+    private List<Incident> incidents;
+
     public ImageDetails(){}
 
-    public ImageDetails(String imageId, boolean subscription,ContainerDetails cd,int thresholdErrCnt) {
+    public ImageDetails(String imageId, boolean subscription,ContainerDetails cd,int thresholdErrCnt,String dockerDaemon) {
         this.imageId = imageId;
         this.isSubscribed = subscription;
         this.thresholdErrCnt = thresholdErrCnt;
+        this.getDockerDaemonList().add(dockerDaemon);
         if(cd != null)this.containerDetails = Arrays.asList(cd);
     }
 
@@ -66,11 +71,7 @@ public class ImageDetails implements Serializable {
     }
 
     public int getTotalIncidents() {
-        return  (totalIncidents = this.totalOpenIncidents+ this.totalCloseIncidents);
-    }
-
-    public void setTotalIncidents(int totalIncidents) {
-        this.totalIncidents = totalIncidents;
+        return  (this.totalOpenIncidents+ this.totalCloseIncidents);
     }
 
     public String getTotalOpenIncidents() {
@@ -111,6 +112,21 @@ public class ImageDetails implements Serializable {
 
     public void setErrorMap(Map<String, Integer> errorMap) {
         this.errorMap = errorMap;
+    }
+
+    public List<String> getDockerDaemonList() {
+        if(dockerDaemonList == null){
+            dockerDaemonList = new ArrayList<>();
+        }
+        return dockerDaemonList;
+    }
+
+    public List<Incident> getIncidents() {
+        return incidents;
+    }
+
+    public void setIncidents(List<Incident> incidents) {
+        this.incidents = incidents;
     }
 
     @Override

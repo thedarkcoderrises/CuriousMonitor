@@ -15,8 +15,6 @@ import com.tdcr.docker.ui.views.dashboard.DashboardCounterLabel;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.charts.Chart;
-import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -107,7 +105,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     }
 
     private void initDockerCombobox() {
-        dockerComboBox.setItems(dockerService.getDockerDeamons());
+        dockerComboBox.setItems(dockerService.getDockerDaemons());
         dockerComboBox.addValueChangeListener(event -> {
             if (event.getSource().isEmpty()) {
                 Notification.show("Inavlid action!");
@@ -122,6 +120,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     private void setupSearchBar() {
         searchBar.getActionButton().setIcon(VaadinIcon.REFRESH.create());
         searchBar.getActionButton().addClickListener(e ->{
+            if(!validateComboBoxSelection()) return;
             initDataProvider();
             grid.setDataProvider(dataProvider);
         });
@@ -129,8 +128,8 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 dataProvider.setFilter(DockContainer::getContainerName,
                         s -> DataUtil.caseInsensitiveContains(s, searchBar.getFilter())));
         this.dockerComboBox =searchBar.getComboBox();
-        dockerComboBox.setItems(dockerService.getDockerDeamons());
-        dockerComboBox.setPlaceholder(AppConst.DOCKER_DEAMON_STR);
+        dockerComboBox.setItems(dockerService.getDockerDaemons());
+        dockerComboBox.setPlaceholder(AppConst.DOCKER_DAEMON_STR);
         dockerComboBox.addValueChangeListener(e -> {
             if (e.getSource().isEmpty()) {
                 Notification.show("Inavlid action!");
@@ -142,7 +141,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     }
 
     private void setupGrid() {
-        dockerService.updateDockerClient(dockerService.getDockerDeamons().iterator().next());
+        dockerService.updateDockerClient(dockerService.getDockerDaemons().iterator().next());
         initDataProvider();
         addGridColumns();
     }
@@ -372,6 +371,14 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             }
         };
         thread.start();
+    }
+    private boolean validateComboBoxSelection() {
+        if(searchBar.getComboBox().getValue() == null){
+            Notification.show("Please select DockerDaemon!");
+            return false;
+        }else{
+            return true;
+        }
     }
 
 }

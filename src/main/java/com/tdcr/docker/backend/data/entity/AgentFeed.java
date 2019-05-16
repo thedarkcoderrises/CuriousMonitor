@@ -5,17 +5,12 @@ import java.util.Map;
 public class AgentFeed {
 
     private String imageId;
-    private String dockerDeamon;
+    private String dockerDaemon;
     private Map<String,Integer> errorMap;
     private String containerName;
+    private ErrorDetails errorDetails;
+    private Incident incident;
 
-
-    /*public AgentFeed(String imageId, String dockerDeamon, Map<String, Integer> errorMap) {
-        super();
-        this.imageId = imageId;
-        this.dockerDeamon = dockerDeamon;
-        this.errorMap = errorMap;
-    }*/
 
     public String getImageId() {
         return imageId;
@@ -25,12 +20,12 @@ public class AgentFeed {
         this.imageId = imageId;
     }
 
-    public String getDockerDeamon() {
-        return dockerDeamon;
+    public String getDockerDaemon() {
+        return dockerDaemon;
     }
 
-    public void setDockerDeamon(String dockerDeamon) {
-        this.dockerDeamon = dockerDeamon;
+    public void setDockerDaemon(String dockerDaemon) {
+        this.dockerDaemon = dockerDaemon;
     }
 
     public Map<String, Integer> getErrorMap() {
@@ -47,5 +42,21 @@ public class AgentFeed {
 
     public void setContainerName(String containerName) {
         this.containerName = containerName;
+    }
+
+    public ErrorDetails getErrorDetails() {
+        return errorDetails;
+    }
+
+    public void setErrorDetails(ErrorDetails errorDetails) {
+        this.errorDetails = errorDetails;
+    }
+
+    public Incident getIncident() {
+        return incident;
+    }
+
+    public void setIncident(Incident incident) {
+        this.incident = incident;
     }
 }

@@ -23,7 +23,7 @@ public class AppConst {
     public static final String SHA_256 = "sha256:";
     public static final String CONTAINER_UP = "running";
     public static final String SELECT_PH = "Select..";
-    public static final String DOCKER_DEAMON_STR = "DockerDeamon";
+    public static final String DOCKER_DAEMON_STR = "DockerDaemon";
     public static final String ZERO_STR = "0";
     public static int NOTIFICATION_DURATION = 4000;
 

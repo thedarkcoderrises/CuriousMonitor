@@ -400,7 +400,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		grid.addColumn(new ComponentRenderer<>(image -> {
 			Button update = new Button("", event -> {
 					dockerService.setSubscriptionToContainer(
-							image.getImageId(),!image.isSubscription()
+							image.getImageId(),!image.isSubscription(),searchBar.getComboBox().getValue()
 					);
 					String msg ="Subscription removed";
 					if(!image.isSubscription()){
@@ -423,6 +423,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 	private void setupSearchBar() {
 		searchBar.getActionButton().setIcon(VaadinIcon.REFRESH.create());
 		searchBar.getActionButton().addClickListener(e ->{
+			if(!validateComboBoxSelection()) return;
 			initDataProvider();
 			updateChartDetails(getSelectedRow());
 		});
@@ -430,8 +431,8 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 				dataProvider.setFilter(DockImage::getImageName,
 						s -> DataUtil.caseInsensitiveContains(s, searchBar.getFilter())));
 		this.dockerCombobox =searchBar.getComboBox();
-		dockerCombobox.setItems(dockerService.getDockerDeamons());
-		dockerCombobox.setPlaceholder(AppConst.DOCKER_DEAMON_STR);
+		dockerCombobox.setItems(dockerService.getDockerDaemons());
+		dockerCombobox.setPlaceholder(AppConst.DOCKER_DAEMON_STR);
 		dockerCombobox.addValueChangeListener(e -> {
 			if (e.getSource().isEmpty()) {
 				Notification.show("Inavlid action!");
@@ -441,6 +442,14 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 				searchBar.getActionButton().click();
 			}
 		});
+	}
+	private boolean validateComboBoxSelection() {
+		if(searchBar.getComboBox().getValue() == null){
+			Notification.show("Please select a DockerDaemon!");
+			return false;
+		}else{
+			return true;
+		}
 	}
 
 

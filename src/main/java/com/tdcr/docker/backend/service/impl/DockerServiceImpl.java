@@ -168,13 +168,13 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     }
 
     @Override
-    public Set<String> getDockerDeamons() {
+    public Set<String> getDockerDaemons() {
         return dockerClientMap.keySet();
     }
 
     @Override
-    public void setSubscriptionToContainer(String imageId , boolean subscription) {
-        imageRepository.save(new ImageDetails(imageId,subscription,null,4));
+    public void setSubscriptionToContainer(String imageId, boolean subscription, String dockerDaemon) {
+        imageRepository.save(new ImageDetails(imageId,subscription,null,4,dockerDaemon));
     }
 
     @Override

@@ -36,9 +36,9 @@ public interface DockerService {
 
     String removeContainer(String containerId);
 
-    Set<String> getDockerDeamons();
+    Set<String> getDockerDaemons();
 
-    void setSubscriptionToContainer(String imageId ,boolean subscription);
+    void setSubscriptionToContainer(String imageId, boolean subscription, String dockerDaemon);
 
     List<DockImage> listAllImages();
 
