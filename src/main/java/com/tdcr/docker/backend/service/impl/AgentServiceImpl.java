@@ -26,8 +26,8 @@ public class AgentServiceImpl implements AgentService, HasLogger {
     @Autowired
     IncidentRepository incidentRepository;
 
-    @Autowired
-    ContainerRepository containerRepository;
+//    @Autowired
+//    ContainerRepository containerRepository;
 
     @Autowired
     DockerService dockerService;

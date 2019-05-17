@@ -40,10 +40,10 @@ public class ImageDetails implements Serializable {
 
 
 
-    @OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
-    private List<ContainerDetails> containerDetails;
+    /*@OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
+    private List<ContainerDetails> containerDetails;*/
 
-    @OneToMany(fetch = FetchType.LAZY,mappedBy = "imageDetails", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
     private List<Incident> incidents;
 
     public ImageDetails(){}
@@ -53,7 +53,7 @@ public class ImageDetails implements Serializable {
         this.isSubscribed = subscription;
         this.thresholdErrCnt = thresholdErrCnt;
         this.getDockerDaemonList().add(dockerDaemon);
-        if(cd != null)this.containerDetails = Arrays.asList(cd);
+        //if(cd != null)this.containerDetails = Arrays.asList(cd);
     }
 
 
@@ -64,6 +64,10 @@ public class ImageDetails implements Serializable {
 
     public boolean isSubscribed() {
         return isSubscribed;
+    }
+
+    public void setSubscribed(boolean subscribed) {
+        isSubscribed = subscribed;
     }
 
     public boolean isLocked() {
@@ -90,13 +94,13 @@ public class ImageDetails implements Serializable {
         this.totalCloseIncidents = totalCloseIncidents;
     }
 
-    public List<ContainerDetails> getContainerDetails() {
+    /*public List<ContainerDetails> getContainerDetails() {
         return containerDetails;
     }
 
     public void setContainerDetails(List<ContainerDetails> containerDetails) {
         this.containerDetails = containerDetails;
-    }
+    }*/
 
     public int getThresholdErrCnt() {
         return thresholdErrCnt;
@@ -129,7 +133,7 @@ public class ImageDetails implements Serializable {
         this.incidents = incidents;
     }
 
-    @Override
+    /*@Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -148,5 +152,5 @@ public class ImageDetails implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), imageId,isSubscribed, locked);
-    }
+    }*/
 }

@@ -5,8 +5,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
-@Entity(name="ContainerDetails")
-public class ContainerDetails implements Serializable {
+//@Entity(name="ContainerDetails")
+public class ContainerDetails implements Serializable {/*
 
     @Id
     @NotEmpty
@@ -84,6 +84,6 @@ public class ContainerDetails implements Serializable {
 
     public void setErrorType(String errorType) {
         this.errorType = errorType;
-    }
+    }*/
 }
 

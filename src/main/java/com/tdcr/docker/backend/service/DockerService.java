@@ -46,7 +46,7 @@ public interface DockerService {
 
     String removeImage(String imageId);
 
-    ImageDetails getImageDetailsStats(String imageId);
+    ImageDetails getImageDetails(String imageId);
 
     Info getDockerInfo();
 

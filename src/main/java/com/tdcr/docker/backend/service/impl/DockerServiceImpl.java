@@ -45,6 +45,9 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     @Autowired
     KafkaTemplate kafkaTemplate;
 
+    @Value("${thresholdErrCnt:4}")
+    int thresholdErrCnt;
+
     @Override
     public String listRunningContainers() {
         return listAllContainers("running").toString();
@@ -131,7 +134,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
 
     private void notifyConttainerStatus(DockContainer container, String cmdStr) {
 
-        ImageDetails imageDetails = getImageDetailsStats(container.getImageId());
+        ImageDetails imageDetails = getImageDetails(container.getImageId());
         if(imageDetails == null) return;
         if(imageDetails.isSubscribed()){
             kafkaTemplate.send("CuriousNotifyTopic",""+System.currentTimeMillis(),
@@ -174,7 +177,15 @@ public class DockerServiceImpl implements DockerService, HasLogger {
 
     @Override
     public void setSubscriptionToContainer(String imageId, boolean subscription, String dockerDaemon) {
-        imageRepository.save(new ImageDetails(imageId,subscription,null,4,dockerDaemon));
+        Optional<ImageDetails> opt = imageRepository.findById(imageId);
+        ImageDetails imageDetails;
+        if (!opt.isPresent()){
+            imageDetails = new ImageDetails(imageId,subscription,null,thresholdErrCnt,dockerDaemon);
+        }else{
+            imageDetails = opt.get();
+        }
+        imageDetails.setSubscribed(subscription);
+        imageRepository.save(imageDetails);
     }
 
     @Override
@@ -249,7 +260,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     }
 
     @Override
-    public ImageDetails getImageDetailsStats(String imageId) {
+    public ImageDetails getImageDetails(String imageId) {
         Optional<ImageDetails> opt = imageRepository.findById(imageId);
         return opt.isPresent()? opt.get():null;
     }

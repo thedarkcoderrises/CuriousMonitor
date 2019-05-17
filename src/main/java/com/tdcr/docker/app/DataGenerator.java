@@ -1,12 +1,10 @@
 package com.tdcr.docker.app;
 
-import com.tdcr.docker.backend.data.entity.ContainerDetails;
+import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
-import com.tdcr.docker.backend.repositories.ContainerRepository;
+import com.tdcr.docker.backend.data.entity.User;
 import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.repositories.UserRepository;
-import com.tdcr.docker.backend.data.Role;
-import com.tdcr.docker.backend.data.entity.User;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,18 +22,16 @@ public class DataGenerator implements HasLogger {
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
 	private ImageRepository imageRepository;
-	private ContainerRepository containerRepository;
 
 	@Value("${thresholdErrCnt:4}")
 	int thresholdErrCnt;
 
 	@Autowired
 	public DataGenerator(UserRepository userRepository,
-                         PasswordEncoder passwordEncoder, ImageRepository imageRepository,ContainerRepository containerRepository) {
+                         PasswordEncoder passwordEncoder, ImageRepository imageRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.imageRepository = imageRepository;
-		this.containerRepository = containerRepository;
 	}
 
 	@PostConstruct
@@ -50,12 +46,8 @@ public class DataGenerator implements HasLogger {
 		createChecker(userRepository,passwordEncoder);
 		setSocatSubscription();
 		getLogger().info("Generated demo data");
-		getContainer();
 	}
 
-	private void getContainer() {
-		System.out.println(containerRepository.findAll());
-	}
 
 
 	private void setSocatSubscription() {

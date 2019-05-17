@@ -4,6 +4,7 @@ import com.github.dockerjava.api.model.Info;
 import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.DockImage;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
+import com.tdcr.docker.backend.data.entity.Incident;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
@@ -17,12 +18,15 @@ import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -73,10 +77,10 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 //
 	@Id("yearlySalesGraph")
 	private Chart errorRateGraph;
-//
+
 	@Id("dockimageGrid")
 	private Grid<DockImage> grid;
-//
+
 	@Id("monthlyProductSplit")
 	private Chart dockerInfoBarChart;
 
@@ -88,6 +92,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 
 	@Value("${x-axis:5}")
 	int xAxis;
+
 
 	private ListDataProvider<DockImage> dataProvider;
 
@@ -109,7 +114,6 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		setupSearchBar();
 		initDockerInfo();
 	}
-
 
 	private void initErrorRateChart() {
 		Configuration conf = errorRateGraph.getConfiguration();
@@ -169,7 +173,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		exitRunningLoop = true;
 		if(selectedImage != null &&
 				selectedImage.getImageDetails()!= null ){
-			ImageDetails imageDetails = dockerService.getImageDetailsStats(selectedImage.getImageId());
+			ImageDetails imageDetails = dockerService.getImageDetails(selectedImage.getImageId());
 			if(imageDetails.getErrorMap().isEmpty()) return;
 			int errorType = imageDetails.getErrorMap().size();
 			Number[][] errorPerSec = new Number[errorType][xAxis];
@@ -199,7 +203,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		updateErrorRateConfigChart(selectedImage);
 		if(selectedImage!=null &&
 				selectedImage.getImageDetails()!=null){
-			ImageDetails imageDetails = dockerService.getImageDetailsStats(selectedImage.getImageId());
+			ImageDetails imageDetails = dockerService.getImageDetails(selectedImage.getImageId());
 			if(imageDetails.getErrorMap().isEmpty()) return;
 			Command cmd = new Command() {
 					@Override
@@ -212,7 +216,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 								int resetIndex =ls.getData().length-1;
 								int errorCount = 0;
 								if (index == resetIndex) {
-									ImageDetails imgDtl = dockerService.getImageDetailsStats(imageDetails.getImageId());
+									ImageDetails imgDtl = dockerService.getImageDetails(imageDetails.getImageId());
 									errorCount = imgDtl.getErrorMap().get(errorTypeKey);
 									selectedImage.setErrorIndex(index - 1);
 								}else if(index >0){
@@ -390,13 +394,13 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		grid.addColumn(DockImage::getImageName)
 				.setWidth("150px").setHeader("ImageName")
 				.setFlexGrow(1).setSortable(true)
-				.setTextAlign(ColumnTextAlign.CENTER);
+				.setTextAlign(ColumnTextAlign.END);
 		grid.addColumn(DockImage::getTotalContainerCount)
 				.setWidth("100px").setHeader("Total Containers")
 				.setFlexGrow(1).setSortable(true)
-				.setTextAlign(ColumnTextAlign.CENTER);
+				.setTextAlign(ColumnTextAlign.END);
 		grid.addColumn(DockImage::getSize).setHeader("Size")
-				.setWidth("100px").setSortable(true);
+				.setWidth("100px").setSortable(true).setTextAlign(ColumnTextAlign.END);
 		grid.addColumn(new ComponentRenderer<>(image -> {
 			Button update = new Button("", event -> {
 					dockerService.setSubscriptionToContainer(
@@ -415,10 +419,88 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 				update.setIcon(VaadinIcon.BELL_O.create());
 			}
 			return update;
-		})).setKey("notify").setTextAlign(ColumnTextAlign.CENTER);;
+		})).setKey("notify").setTextAlign(ColumnTextAlign.CENTER);
+
+		grid.addColumn(new ComponentRenderer<>(image -> {
+			Button inc = new Button("");
+				if (image.getImageDetails()!= null &&
+					image.getImageDetails().getTotalIncidents() >0) {
+					inc.setClassName("inc-btn-show");
+					inc.setIcon(VaadinIcon.BUG.create());
+					inc.addClickListener(e ->{
+						showIncDetails(image);
+					});
+				}else{
+					inc.setClassName("inc-btn-hide");
+				}
+				inc.setWidth("10%");
+				return inc;
+			})).setTextAlign(ColumnTextAlign.CENTER);
 
 		grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+
 	}
+
+	void showIncDetails(DockImage image){
+		if(image.getImageDetails()== null ||
+				image.getImageDetails().getIncidents() == null ||
+				image.getImageDetails().getIncidents().isEmpty()) return;
+
+		Dialog incDialog = new Dialog();
+		incDialog.setOpened(true);
+		incDialog.setCloseOnOutsideClick(true);
+		ImageDetails imageDetails =dockerService.getImageDetails(image.getImageId());
+		TextField imageName = new TextField("ImageName");
+		imageName.setValue(image.getImageName());
+
+		TextField incidentNumber = new TextField("Incident");
+
+		TextField shortDescription = new TextField("Description");
+		shortDescription.getElement().setAttribute("colspan", "2");
+
+		TextField category = new TextField("Category");
+
+		TextField caller = new TextField("Caller");
+
+		TextField assignedto = new TextField("AssignedTo");
+
+		TextField incState = new TextField("State");
+
+
+		ComboBox<String> incidents = new ComboBox<>();
+		incidents.setLabel("OtherIncidents");
+
+		FormLayout form = new FormLayout(imageName, incidentNumber,category,caller,assignedto,incState, shortDescription, incidents);
+		Map<String,Incident> incNumberMap= new HashMap<>();
+		for (Incident incident:
+				imageDetails.getIncidents()) {
+			incNumberMap.put(incident.getIncNumber(),incident);
+		}
+
+		incidents.setItems(incNumberMap.keySet());
+		updateIncFormFields(imageDetails.getIncidents().get(0),incidentNumber,category,caller,assignedto,incState, shortDescription);
+		incidents.addValueChangeListener( e ->{
+			updateIncFormFields(incNumberMap.get(e.getValue()), incidentNumber,category,caller,assignedto,incState, shortDescription);
+		});
+
+		incDialog.add(form);
+		incDialog.setWidth("800px");
+		incDialog.setHeight("400px");
+		incDialog.open();
+	}
+
+	private void updateIncFormFields(Incident inc, TextField incidentNumber,
+									 TextField category, TextField caller, TextField assignedto,
+									 TextField incState, TextField shortDescription) {
+		incidentNumber.setValue(inc.getIncNumber());
+		shortDescription.setValue(inc.getShortDescription());
+		category.setValue(inc.getCategory());
+		caller.setValue(inc.getCaller());
+		assignedto.setValue(inc.getAssignedTo());
+		incState.setValue(inc.getIncState());
+
+	}
+
 
 	private void setupSearchBar() {
 		searchBar.getActionButton().setIcon(VaadinIcon.REFRESH.create());

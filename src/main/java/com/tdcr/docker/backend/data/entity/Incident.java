@@ -12,7 +12,7 @@ public class Incident {
 
     @NotEmpty
     @Size(max = 255)
-    @Column(unique = true)
+    @Column(unique = false)
     private String imageId;
 
     @ManyToOne
@@ -95,4 +95,5 @@ public class Incident {
     public void setCategory(String category) {
         this.category = category;
     }
+
 }
