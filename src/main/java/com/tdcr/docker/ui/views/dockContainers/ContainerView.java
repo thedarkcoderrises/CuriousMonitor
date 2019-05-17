@@ -31,6 +31,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.NativeButtonRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -73,34 +74,23 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
     private ComboBox<String> dockerComboBox;
 
-    @Id("refresh")
-    private Button refreshBtn;
-
-    @Id("updateStatus")
-    private Button updateContainerStatus;
 
     /**
      * Creates a new Container
      */
     @PostConstruct
     void init() {
-        initButtonListeners();
+//        initButtonListeners();
         setupGrid();
         setupSearchBar();
         initStatDialog();
     }
 
     private void initButtonListeners() {
-        refreshBtn.setIcon(VaadinIcon.REFRESH.create());
-        refreshBtn.addClickListener(e -> {
+        searchBar.getActionButton().addClickListener(e -> {
+            if(!validateComboBoxSelection())return;
             initDataProvider();
             grid.setDataProvider(dataProvider);
-        });
-
-
-        updateContainerStatus.setIcon(VaadinIcon.POWER_OFF.create());
-        updateContainerStatus.addClickListener(e ->{
-            updateStatus();
         });
     }
 
@@ -111,7 +101,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 Notification.show("Inavlid action!");
             } else {
                 dockerService.updateDockerClient(event.getValue());
-                refreshBtn.click();
+                searchBar.getActionButton().click();
             }
         });
         dockerComboBox.setPlaceholder(AppConst.SELECT_PH);
@@ -155,22 +145,30 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                 .setWidth("270px").setHeader("ContainerName").setFlexGrow(3).setSortable(true);
         grid.addColumn(dc -> dc.getImageName())
                 .setHeader("ImageName").setWidth("200px").setFlexGrow(3).setSortable(true);
-        grid.addColumn(new ComponentRenderer<>(container -> {
-            if (container.getStatus().equalsIgnoreCase(AppConst.CONTAINER_UP)) {
-                Icon up = VaadinIcon.ARROW_UP.create();
-                up.setColor("#7eec65");
-                return up;
-            } else {
-                Icon down = VaadinIcon.ARROW_DOWN.create();
-                down.setColor("#f51f06");
-                return down;
-            }
-        })).setHeader("Status").setWidth("150px");
         grid.addColumn(DockContainer::getPort).setHeader("ExposedPort").setWidth("150px");
-
         grid.addColumn(TemplateRenderer.<DockContainer> of("<a href=\"[[item.link]]\">logs</a>\n")
                 .withProperty("link", DockContainer::getURL));
-        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+        grid.addColumn(new ComponentRenderer<>(container -> {
+            Button power = new Button();
+            if (container.getStatus().equalsIgnoreCase(AppConst.CONTAINER_UP)) {
+               Icon powerOn = VaadinIcon.POWER_OFF.create();
+               powerOn.setColor("#f51f06");
+                power.setIcon(powerOn);
+                power.addClickListener(e ->{
+                    updateStatus(container);
+                });
+            } else {
+                Icon powerOff = VaadinIcon.POWER_OFF.create();
+                powerOff.setColor("#7eec65");
+                power.setIcon(powerOff);
+                power.addClickListener(e ->{
+                    updateStatus(container);
+                });
+            }
+            return power;
+        })).setHeader("Status").setWidth("150px");
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setDetailsVisibleOnClick(true);
         grid.setItemDetailsRenderer(new ComponentRenderer<>(container -> {return showSelectedContainerStats(container);}));
     }
@@ -198,10 +196,8 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
         return (DockContainer) selectedItems.toArray()[0];
     }
 
-    private void updateStatus() {
-        DockContainer container = getSelectedRow();
+    private void updateStatus(DockContainer container) {
         if(container == null) return;
-
         if(container.getContainerName().contains("socat") || container.getContainerName().contains("dw") ){
             Notification.show("Inavlid action!");
             return;
@@ -223,7 +219,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                    String containerID = dockerService.updateContainerStatus(container,status);
                    if(container.getContainerId().equals(containerID)){
                        Notification.show("Saved status");
-                       refreshBtn.click();
+                       searchBar.getActionButton().click();
                    }
                 },() -> clear());
     }

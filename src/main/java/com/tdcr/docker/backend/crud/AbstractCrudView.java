@@ -59,6 +59,7 @@ public abstract class AbstractCrudView<E extends AbstractEntity> extends Crud<E>
         searchBar.setPlaceHolder("Search");
         searchBar.addFilterChangeListener(e -> dataProvider.setFilter(searchBar.getFilter()));
         searchBar.getActionButton().getElement().setAttribute("new-button", true);
+        searchBar.getComboBox().addClassName("hide-drop-down");
         setToolbar(searchBar);
         setupCrudEventListeners(entityPresenter);
     }

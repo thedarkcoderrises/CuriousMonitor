@@ -21,8 +21,8 @@ public class LoginView extends VerticalLayout
     private LoginOverlay login = new LoginOverlay();
 
     public LoginView() {
-        getElement().appendChild(
-                new AppCookieConsent().getElement(), login.getElement());
+//        getElement().appendChild(
+//                new AppCookieConsent().getElement(), login.getElement());
 
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.setHeader(new LoginI18n.Header());

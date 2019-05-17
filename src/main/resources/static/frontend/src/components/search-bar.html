@@ -80,6 +80,17 @@
         :host([show-checkbox][show-extra-filters]) .checkbox.mobile {
           display: none;
         }
+
+        .hide-drop-down {
+            display: none;
+        }
+
+        .drop-down {
+          width: 100%;
+          max-width: 150px;
+          margin: 0 auto;
+          padding:10px;
+        }
       }
     </style>
 <div class="row">
@@ -95,7 +106,7 @@
  <vaadin-button id="action" class="action-btn" theme="primary">
    [[buttonText]] 
  </vaadin-button>
- <vaadin-combo-box id="combobox" style="width:20%" placeholder="Select.."></vaadin-combo-box>
+ <vaadin-combo-box id="combobox" style="width:20%" placeholder="Select.." class="drop-down"></vaadin-combo-box>
 </div>
 <vaadin-checkbox class="checkbox mobile" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur">
   [[checkboxText]] 
