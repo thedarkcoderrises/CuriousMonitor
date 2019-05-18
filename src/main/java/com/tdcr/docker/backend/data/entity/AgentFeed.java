@@ -8,7 +8,6 @@ public class AgentFeed {
     private String dockerDaemon;
     private Map<String,Integer> errorMap;
     private String containerName;
-    private ErrorDetails errorDetails;
     private Incident incident;
 
 
@@ -42,14 +41,6 @@ public class AgentFeed {
 
     public void setContainerName(String containerName) {
         this.containerName = containerName;
-    }
-
-    public ErrorDetails getErrorDetails() {
-        return errorDetails;
-    }
-
-    public void setErrorDetails(ErrorDetails errorDetails) {
-        this.errorDetails = errorDetails;
     }
 
     public Incident getIncident() {

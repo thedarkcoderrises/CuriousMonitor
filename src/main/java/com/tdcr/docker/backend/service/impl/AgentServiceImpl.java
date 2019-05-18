@@ -26,9 +26,6 @@ public class AgentServiceImpl implements AgentService, HasLogger {
     @Autowired
     IncidentRepository incidentRepository;
 
-//    @Autowired
-//    ContainerRepository containerRepository;
-
     @Autowired
     DockerService dockerService;
 
@@ -66,7 +63,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
             if(totalErrorCnt >= imgDtl.getThresholdErrCnt()){
                 raiseInc(new ErrorDetails(
                         imgDtl.getImageId(),
-                        feed.getContainerName(),imgDtl.getErrorMap()));
+                        imgDtl.getErrorMap()));
             }
         }else{
             imgDtl = new ImageDetails(feed.getImageId(),false,null,thresholdErrCnt,feed.getDockerDaemon());

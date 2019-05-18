@@ -5,13 +5,11 @@ import java.util.Map;
 public class ErrorDetails {
 
     String imageId;
-    String containerName;
     Map<String, Integer> incDescription;
 
 
-    public ErrorDetails(String imageId, String containerName, Map<String, Integer> incDescription) {
+    public ErrorDetails(String imageId, Map<String, Integer> incDescription) {
         this.imageId = imageId;
-        this.containerName = containerName;
         this.incDescription = incDescription;
     }
 
@@ -21,14 +19,6 @@ public class ErrorDetails {
 
     public void setImageId(String imageId) {
         this.imageId = imageId;
-    }
-
-    public String getContainerName() {
-        return containerName;
-    }
-
-    public void setContainerName(String containerName) {
-        this.containerName = containerName;
     }
 
     public Map<String, Integer> getIncDescription() {

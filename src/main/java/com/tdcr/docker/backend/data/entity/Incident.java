@@ -10,6 +10,9 @@ import java.util.Date;
 @Entity(name="Incident")
 public class Incident {
 
+    public static final String OPEN = "open";
+    public static final String CLOSED = "close";
+
     @NotEmpty
     @Size(max = 255)
     @Column(unique = false)

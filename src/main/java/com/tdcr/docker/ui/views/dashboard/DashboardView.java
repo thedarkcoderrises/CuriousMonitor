@@ -36,6 +36,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
@@ -442,14 +443,14 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 	}
 
 	void showIncDetails(DockImage image){
-		if(image.getImageDetails()== null ||
-				image.getImageDetails().getIncidents() == null ||
-				image.getImageDetails().getIncidents().isEmpty()) return;
+		ImageDetails imageDetails = dockerService.getImageDetails(image.getImageId());
+		if(imageDetails== null ||
+				imageDetails.getIncidents() == null ||
+				imageDetails.getIncidents().isEmpty()) return;
 
 		Dialog incDialog = new Dialog();
 		incDialog.setOpened(true);
 		incDialog.setCloseOnOutsideClick(true);
-		ImageDetails imageDetails =dockerService.getImageDetails(image.getImageId());
 		TextField imageName = new TextField("ImageName");
 		imageName.setValue(image.getImageName());
 
@@ -474,12 +475,13 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		Map<String,Incident> incNumberMap= new HashMap<>();
 		for (Incident incident:
 				imageDetails.getIncidents()) {
-			incNumberMap.put(incident.getIncNumber(),incident);
+			incNumberMap.put(incident.getIncNumber()+"-"+incident.getIncState(),incident);
 		}
 
 		incidents.setItems(incNumberMap.keySet());
 		updateIncFormFields(imageDetails.getIncidents().get(0),incidentNumber,category,caller,assignedto,incState, shortDescription);
 		incidents.addValueChangeListener( e ->{
+			if(StringUtils.isEmpty(e.getValue())) return;
 			updateIncFormFields(incNumberMap.get(e.getValue()), incidentNumber,category,caller,assignedto,incState, shortDescription);
 		});
 

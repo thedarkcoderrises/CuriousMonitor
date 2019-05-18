@@ -38,11 +38,6 @@ public class ImageDetails implements Serializable {
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String,Integer> errorMap;
 
-
-
-    /*@OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
-    private List<ContainerDetails> containerDetails;*/
-
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "imageDetails", cascade = CascadeType.ALL)
     private List<Incident> incidents;
 
@@ -53,7 +48,6 @@ public class ImageDetails implements Serializable {
         this.isSubscribed = subscription;
         this.thresholdErrCnt = thresholdErrCnt;
         this.getDockerDaemonList().add(dockerDaemon);
-        //if(cd != null)this.containerDetails = Arrays.asList(cd);
     }
 
 
@@ -75,6 +69,19 @@ public class ImageDetails implements Serializable {
     }
 
     public int getTotalIncidents() {
+        int open = 0;
+        int close = 0;
+        if(getIncidents() != null && !getIncidents().isEmpty()){
+            for (Incident inc: getIncidents()) {
+                if(Incident.OPEN.equalsIgnoreCase(inc.getIncState())){
+                    open++;
+                }else{
+                    close++;
+                }
+            }
+        }
+        setTotalOpenIncidents(open);
+        setTotalCloseIncidents(close);
         return  (this.totalOpenIncidents+ this.totalCloseIncidents);
     }
 
@@ -93,14 +100,6 @@ public class ImageDetails implements Serializable {
     public void setTotalCloseIncidents(int totalCloseIncidents) {
         this.totalCloseIncidents = totalCloseIncidents;
     }
-
-    /*public List<ContainerDetails> getContainerDetails() {
-        return containerDetails;
-    }
-
-    public void setContainerDetails(List<ContainerDetails> containerDetails) {
-        this.containerDetails = containerDetails;
-    }*/
 
     public int getThresholdErrCnt() {
         return thresholdErrCnt;
@@ -133,24 +132,4 @@ public class ImageDetails implements Serializable {
         this.incidents = incidents;
     }
 
-    /*@Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        ImageDetails that = (ImageDetails) o;
-        return locked == that.locked &&
-                Objects.equals(imageId, that.imageId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), imageId,isSubscribed, locked);
-    }*/
 }
