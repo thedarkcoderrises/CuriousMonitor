@@ -74,7 +74,9 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                 getLogger().info("{} with id {} is critical",hc.getServiceName().get(),
                                         hc.getCheckId());
                                 com.orbitz.consul.model.health.Service service =
-                                        agentClient.getServices().get(hc.getCheckId().replace("service:",""));
+                                        agentClient.getServices().get(
+                                                hc.getCheckId().replace("service:",
+                                                        ""));
                                 String containerId = service.getAddress();
                                 dockerService.updateDockerClient(dockerDaemonName);
                                 InspectContainerResponse containerResponse =

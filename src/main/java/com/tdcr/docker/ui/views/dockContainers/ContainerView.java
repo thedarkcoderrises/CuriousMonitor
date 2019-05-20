@@ -7,6 +7,7 @@ import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.DataUtil;
+import com.tdcr.docker.ui.components.FilteredGridLayout;
 import com.tdcr.docker.ui.components.Message;
 import com.tdcr.docker.ui.components.SearchBar;
 import com.tdcr.docker.ui.views.EntityView;
@@ -39,8 +40,11 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import javax.print.Doc;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -168,6 +172,8 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             }
             return power;
         })).setHeader("Status").setWidth("150px");
+        grid.addColumn(DockContainer::getLinks)
+                .setWidth("270px").setHeader("Links").setSortable(true);
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setDetailsVisibleOnClick(true);
         grid.setItemDetailsRenderer(new ComponentRenderer<>(container -> {return showSelectedContainerStats(container);}));
@@ -198,7 +204,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
     private void updateStatus(DockContainer container) {
         if(container == null) return;
-        if(container.getContainerName().contains("socat") || container.getContainerName().contains("dw") ){
+        if(container.getContainerName().contains("socat") || container.getContainerName().contains("dw") || isLinked(container)){
             Notification.show("Inavlid action!");
             return;
         }
@@ -222,6 +228,19 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
                        searchBar.getActionButton().click();
                    }
                 },() -> clear());
+    }
+
+    private boolean isLinked(DockContainer container) {
+       if(!container.getStatus().equalsIgnoreCase("running")){
+           return false;
+       }
+        List<DockContainer> lst= dockerService.listAllContainers(null);
+        for (DockContainer dc :lst){
+            if(FilteredGridLayout.caseInsensitiveContains(container.getContainerName(),dc.getLinks())){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import org.springframework.util.StringUtils;
 
 import java.util.Set;
 @Deprecated
@@ -34,8 +35,9 @@ public class FilteredGridLayout extends HorizontalLayout {
         dataProvider.setFilter(DockContainer::getImageName, s -> caseInsensitiveContains(s, event.getValue()));
     }
 
-    private Boolean caseInsensitiveContains(String where, String what) {
-        return where.toLowerCase().contains(what.toLowerCase());
+    public static boolean caseInsensitiveContains(String where, String what) {
+        if(StringUtils.isEmpty(what)) return false;
+        return (where.toLowerCase().contains(what.toLowerCase()) || what.toLowerCase().contains(where.toLowerCase()));
     }
 
 

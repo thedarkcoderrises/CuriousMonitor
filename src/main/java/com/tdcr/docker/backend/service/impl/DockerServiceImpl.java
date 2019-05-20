@@ -2,10 +2,7 @@ package com.tdcr.docker.backend.service.impl;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.api.model.Statistics;
+import com.github.dockerjava.api.model.*;
 import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.DockImage;
@@ -82,7 +79,8 @@ public class DockerServiceImpl implements DockerService, HasLogger {
         for (Container container :
                 lst) {
            Optional<ImageDetails> subscription = imageRepository.findById(container.getImageId());
-            list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false,elkURL));
+            Link[] links = inspectOnContainerId(container.getId()).getHostConfig().getLinks();
+            list.add(new DockContainer(container, subscription.isPresent()?subscription.get().isSubscribed():false,elkURL,links));
         }
         return list;
     }

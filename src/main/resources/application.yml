@@ -14,7 +14,8 @@ application:
   message: Hey there!
   appname: I'm theDarkCoderRises from DockerWorld.
 
-elk.url: https://www.elastic.co/elk-stack
+elk.url: https://search-jbtdcresdomain-6ghjjpn3wxczrz4y2nsoucocue.ap-south-1.es.amazonaws.com/_plugin/kibana/app/kibana#/discover?_g=()&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'8f28b2b0-3f0b-11e9-b37c-1fb81f8331d8',key:'@log_stream',negate:!f,params:(query:'%s*',type:phrase),type:phrase,value:'%s*'),query:(match:('@log_stream':(query:'%s*',type:phrase))))),index:'8f28b2b0-3f0b-11e9-b37c-1fb81f8331d8',interval:auto,query:(language:lucene,query:''),sort:!(_score,desc))
+
 
 thresholdErrCnt: 5
 
