@@ -1,6 +1,8 @@
 package com.tdcr.docker.backend.service.impl;
 
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.InspectImageResponse;
 import com.orbitz.consul.AgentClient;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
@@ -9,6 +11,7 @@ import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.AgentFeed;
+import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.data.entity.ErrorDetails;
 import com.tdcr.docker.backend.repositories.ImageRepository;
@@ -45,16 +48,17 @@ public class AgentServiceImpl implements AgentService, HasLogger {
     @Value("${thresholdErrCnt:4}")
     int thresholdErrCnt;
 
-    @Value("${checkInterval:5000}")
+    @Value("${checkInterval:30000}")
     int checkInterval;
 
-    Map<String,String> svcHealthMap = new HashMap<>();
+//    Map<String,String> svcHealthMap = new HashMap<>();
 
     @Autowired
     Map<String,Consul> consulClienttMap;
 
     @PostConstruct
     void initializeHealthCheck(){
+        dockerService.init();
         for (String dockerDaemonName : consulClienttMap.keySet()){
             Consul consul = consulClienttMap.get(dockerDaemonName);
             HealthClient healthClient = consul.healthClient();
@@ -65,14 +69,13 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                     while(true){
                         try {
                             ConsulResponse<List<HealthCheck>> response =
-                                    healthClient.getChecksByState(State.FAIL);
+                                    healthClient.getChecksByState(State.ANY);
                             for (HealthCheck hc:
                                     response.getResponse()) {
                                 String svcName = hc.getServiceName().get();
-                                if("scheduled".equals(svcHealthMap.get(svcName))) continue;
-                                svcHealthMap.put(svcName,"critical");
-                                getLogger().info("{} with id {} is critical",hc.getServiceName().get(),
-                                        hc.getCheckId());
+                                if("serfHealth".equals(hc.getCheckId())) continue;
+                                getLogger().info("{} with id {} is {}",hc.getServiceName().get(),
+                                        hc.getCheckId(),hc.getStatus());
                                 com.orbitz.consul.model.health.Service service =
                                         agentClient.getServices().get(
                                                 hc.getCheckId().replace("service:",
@@ -81,7 +84,23 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                 dockerService.updateDockerClient(dockerDaemonName);
                                 InspectContainerResponse containerResponse =
                                         dockerService.inspectOnContainerId(containerId);
-                                svcHealthMap.put(svcName,"scheduled");
+                               ImageDetails imageDetails = dockerService.getImageDetails(containerResponse.getImageId());
+                               if(response.getResponse().size()-1 < imageDetails.getTotalContainersList().size()){
+                                   for (String containerIdStr:
+                                        imageDetails.getTotalContainersList()) {
+                                       if(!containerId.equals(containerIdStr)){
+                                           DockContainer dc = new DockContainer();
+                                           dc.setImageId(imageDetails.getImageId());
+                                           dc.setContainerId(containerIdStr);
+                                           dockerService.updateContainerStatus(dc,true);
+                                       }
+                                   }
+                               }
+                              /*  CreateContainerResponse container = dockerService.cloneContainer(containerResponse);
+                                DockContainer dc = new DockContainer();
+                                dc.setContainerId(container.getId());
+                                dc.setImageId(containerResponse.getImageId());
+                                dockerService.updateContainerStatus(dc,true);*/
                             }
                         } catch (Exception e) {
                         }finally {
@@ -108,7 +127,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
         dockerService.updateDockerClient(feed.getDockerDaemon());
         Optional<ImageDetails> opt = imageRepository.findById(
                 feed.getImageId().replace(AppConst.SHA_256,AppConst.EMPTY_STR));
-        ImageDetails imgDtl;
+        ImageDetails imgDtl = null;
         if(opt.isPresent()){
             imgDtl = opt.get();
             int totalErrorCnt =0;
@@ -128,9 +147,9 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                         imgDtl.getImageId(),
                         imgDtl.getErrorMap()));
             }
-        }else{
-            imgDtl = new ImageDetails(feed.getImageId(),false,null,thresholdErrCnt,feed.getDockerDaemon());
-        }
+        }/*else{
+            imgDtl = new ImageDetails(feed.getImageId(),false,thresholdErrCnt,feed.getDockerDaemon(),0);
+        }*/
         imageRepository.save(imgDtl);
     }
 
@@ -140,5 +159,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
         incidentRepository.save(feed.getIncident());
         getLogger().info("IncidentId {} for imageId {}",feed.getIncident().getIncNumber(),feed.getImageId());
     }
+
+
 
 }

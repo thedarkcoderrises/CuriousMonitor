@@ -26,6 +26,8 @@ public class DockContainer{
     String elkURL;
     String links;
 
+    public DockContainer(){}
+
     public DockContainer(Container container, boolean subscribed,String elkURL, Link[] links) {
         super();
         this.setContainerId(container.getId());

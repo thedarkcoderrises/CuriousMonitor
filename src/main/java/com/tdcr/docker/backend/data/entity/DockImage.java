@@ -5,7 +5,9 @@ import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
 
 import javax.persistence.Id;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DockImage{
@@ -22,6 +24,7 @@ public class DockImage{
     int errorIndex;
     ImageDetails imageDetails;
     Map<Integer,Integer> containerEntry = new HashMap<>();
+    List<String> containerList = new ArrayList<>();
 
     public DockImage(){}
 
@@ -31,6 +34,7 @@ public class DockImage{
         this.virtualSize = ComputeStats.calculateSize(image.getVirtualSize(),true);
         this.versions =image.getRepoTags();
         this.imageDetails = imageDetails;
+        this.imageName = image.getRepoTags()[0];
         if(imageDetails != null) setSubscription(imageDetails.isSubscribed());
 
     }
@@ -101,5 +105,9 @@ public class DockImage{
 
     public void setErrorIndex(int errorIndex) {
         this.errorIndex = errorIndex;
+    }
+
+    public List<String> getContainerList() {
+        return containerList;
     }
 }

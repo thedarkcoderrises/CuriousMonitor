@@ -35,6 +35,10 @@ public class ImageDetails implements Serializable {
 
     private int thresholdErrCnt;
 
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<String> totalContainersList = new ArrayList<>();
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String,Integer> errorMap;
 
@@ -43,10 +47,11 @@ public class ImageDetails implements Serializable {
 
     public ImageDetails(){}
 
-    public ImageDetails(String imageId, boolean subscription,ContainerDetails cd,int thresholdErrCnt,String dockerDaemon) {
+    public ImageDetails(String imageId, boolean subscription,int thresholdErrCnt,String dockerDaemon,String containerId) {
         this.imageId = imageId;
         this.isSubscribed = subscription;
         this.thresholdErrCnt = thresholdErrCnt;
+        this.totalContainersList.add(containerId);
         this.getDockerDaemonList().add(dockerDaemon);
     }
 
@@ -132,4 +137,7 @@ public class ImageDetails implements Serializable {
         this.incidents = incidents;
     }
 
+    public List<String> getTotalContainersList() {
+        return totalContainersList;
+    }
 }

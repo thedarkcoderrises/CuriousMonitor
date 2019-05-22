@@ -1,5 +1,6 @@
 package com.tdcr.docker.backend.service;
 
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.model.Info;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 public interface DockerService {
+
+    void init();
 
     String listRunningContainers();
 
@@ -40,7 +43,7 @@ public interface DockerService {
 
     void setSubscriptionToContainer(String imageId, boolean subscription, String dockerDaemon);
 
-    List<DockImage> listAllImages();
+    List<DockImage> listAllImages(String dockerDaemon);
 
     String pullImageUsingCmd(String cmd);
 
@@ -49,5 +52,9 @@ public interface DockerService {
     ImageDetails getImageDetails(String imageId);
 
     Info getDockerInfo();
+
+    void cloneContainerOnImage(DockImage image, boolean added);
+
+    public CreateContainerResponse cloneContainer(InspectContainerResponse response);
 
 }

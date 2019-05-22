@@ -21,6 +21,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class DockerServiceImpl implements DockerService, HasLogger {
 
     private static Logger LOG = LoggerFactory.getLogger(DockerServiceImpl.class);
+    private static final DecimalFormat df2 = new DecimalFormat("#");
 
     @Autowired
     Map<String,DockerClient> dockerClientMap;
@@ -46,6 +48,15 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     int thresholdErrCnt;
 
     @Override
+    public void init(){
+        for (String dd:
+             dockerClientMap.keySet()) {
+            updateDockerClient(dd);
+            listAllImages(dd);
+        }
+    }
+
+    @Override
     public String listRunningContainers() {
         return listAllContainers("running").toString();
     }
@@ -58,11 +69,11 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     @Override
     public List<DockContainer> listAllContainers(String status) {
         List<Container> lst = new ArrayList<>();
-         lst= getConatainer(status); //  docker ps -a -s -f status=${status}
+         lst= getContainer(status); //  docker ps -a -s -f status=${status}
         return covertContainerData(lst);
     }
 
-    private List<Container> getConatainer(String status) {
+    private List<Container> getContainer(String status) {
         ListContainersCmd cmd = null;
         if(StringUtils.isEmpty(status)){
             cmd = dockerClient.listContainersCmd().withShowSize(true)
@@ -177,11 +188,11 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     public void setSubscriptionToContainer(String imageId, boolean subscription, String dockerDaemon) {
         Optional<ImageDetails> opt = imageRepository.findById(imageId);
         ImageDetails imageDetails;
-        if (!opt.isPresent()){
-            imageDetails = new ImageDetails(imageId,subscription,null,thresholdErrCnt,dockerDaemon);
-        }else{
+      /*  if (!opt.isPresent()){
+            imageDetails = new ImageDetails(imageId,subscription,thresholdErrCnt,dockerDaemon,0);
+        }else{*/
             imageDetails = opt.get();
-        }
+//        }
         imageDetails.setSubscribed(subscription);
         imageRepository.save(imageDetails);
     }
@@ -192,25 +203,31 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     }
 
     @Override
-    public List<DockImage> listAllImages() {
+    public List<DockImage> listAllImages(String dockerDaemon) {
         ListImagesCmd cmd = dockerClient.listImagesCmd();
-        return covertImageData(cmd.exec());
+        return covertImageData(cmd.exec(),dockerDaemon);
     }
 
-    private List<DockImage> covertImageData(List<Image> images) {
+    private List<DockImage> covertImageData(List<Image> images, String dockerDaemon) {
         List<DockImage> list = new ArrayList<>();
-        List<Container> containerList = getConatainer(null);
+        List<Container> containerList = getContainer(null);
         for (Image image :
                 images) {
-            Optional<ImageDetails> subscription = imageRepository.findById(
+            Optional<ImageDetails> imageDetailsOptional = imageRepository.findById(
                     image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR));
-            DockImage dockImage =new DockImage(image, subscription.isPresent()?subscription.get():null);
+            ImageDetails imageDetails = imageDetailsOptional.isPresent()?imageDetailsOptional.get():null;
+            DockImage dockImage =new DockImage(image, imageDetails);
             list.add(dockImage);
             int stopContainerCnt =0;
             int runningContainerCnt = stopContainerCnt;
+            Collections.sort(containerList, new Comparator<Container>() {
+                @Override
+                public int compare(Container o1, Container o2) {
+                    return o1.getCreated().compareTo(o2.getCreated());
+                }
+            });
             for (Container ctnr :containerList) {
                 if(ctnr.getImageId().equalsIgnoreCase(AppConst.SHA_256+dockImage.getImageId())){
-                    dockImage.setImageName(ctnr.getImage());
                     if(ctnr.getStatus().startsWith("Up")){
                         runningContainerCnt+=1;
                     }else{
@@ -223,13 +240,21 @@ public class DockerServiceImpl implements DockerService, HasLogger {
                     }else{
                         dockImage.getContainerEntry().put(date.getMonth(),1);
                     }
-                }else if(StringUtils.isEmpty(dockImage.getImageName())){
-                    dockImage.setImageName(AppConst.EMPTY_STR);
+                    dockImage.getContainerList().add(ctnr.getId());
+                    if(imageDetails == null){
+                        imageDetails   = new ImageDetails(image.getId(),true,4,dockerDaemon,ctnr.getId());
+                    }else{
+                        imageDetails.getTotalContainersList().add(ctnr.getId());
+                    }
                 }
             }
 
             dockImage.setRunningContainerCount(runningContainerCnt);
             dockImage.setTotalContainerCount((runningContainerCnt+stopContainerCnt));
+            if(imageDetails == null){
+                imageDetails   = new ImageDetails(image.getId(),false,4,dockerDaemon,null);
+            }
+            imageRepository.save(imageDetails);
         }
         list.sort(new Comparator<DockImage>() {
             @Override
@@ -268,4 +293,40 @@ public class DockerServiceImpl implements DockerService, HasLogger {
         InfoCmd cmd= dockerClient.infoCmd();
        return cmd.exec();
     }
+
+    @Override
+    public void cloneContainerOnImage(DockImage image, boolean status) {
+        /*CreateContainerResponse container =dockerClient.createContainerCmd("my-sd-svc:1").
+                withName("mysd3").withEnv("CONSUL=consul").withBinds(Bind.parse("/var/run/docker.sock:/var/run/docker.sock:ro")).
+                withLinks(Link.parse("consul:consul")).withNetworkMode("bunit").exec();*/
+        InspectContainerResponse inspectResponse =inspectOnContainerId(image.getContainerList().get(0));
+        DockContainer dc = new DockContainer();
+        if(status){
+            CreateContainerResponse container = cloneContainer(inspectResponse);;
+            dc.setContainerId(container.getId());
+        }else{
+            dc.setContainerId(image.getContainerList().get(image.getContainerList().size()-1));
+        }
+        dc.setImageId(image.getImageId());
+        updateContainerStatus(dc,status );
+
+    }
+
+    @Override
+    public CreateContainerResponse cloneContainer(InspectContainerResponse response) {
+        CreateContainerCmd cmd =dockerClient.createContainerCmd(response.getConfig().getImage()).
+                withName(response.getName().replace(AppConst.FWD_SLASH,AppConst.EMPTY_STR)+df2.format(Math.random()*9+1));
+        for (Bind bind:
+                response.getHostConfig().getBinds()) {
+            cmd.withBinds(bind);
+        }
+        if(!StringUtils.isEmpty(response.getHostConfig().getNetworkMode())){
+//            cmd.withNetworkMode(response.getHostConfig().getNetworkMode());
+            cmd.withNetworkMode("bunit");
+        }
+        if(response.getConfig().getEnv().length >0)
+            cmd.withEnv(response.getConfig().getEnv());
+        return cmd.exec();
+    }
+
 }

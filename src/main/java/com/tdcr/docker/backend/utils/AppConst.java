@@ -20,6 +20,7 @@ public class AppConst {
     public static final String PAGE_DASHBOARD = "dashboard";
     public static final String DOCKER_CONTAINER_NAME = "Container";
     public static final String EMPTY_STR = "";
+    public static final String FWD_SLASH = "/";
     public static final String SHA_256 = "sha256:";
     public static final String CONTAINER_UP = "running";
     public static final String SELECT_PH = "Select..";

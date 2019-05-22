@@ -52,12 +52,12 @@ public class DataGenerator implements HasLogger {
 
 	private void setSocatSubscription() {
 		ImageDetails imgDtl = new ImageDetails("e617a56c238ed06a0215366a122d19fab0b94b28c1413e2171bbe2f883686e6b",
-				true,null,thresholdErrCnt,"LOCAL_DD");
+				true,thresholdErrCnt,"LOCAL_DD","529facf5325a5bc85f928f094354b3c677841e638eb3b5b059cea2907bceee40");
 		imageRepository.save(imgDtl);
 
-		ImageDetails imgDtl2 = new ImageDetails("2760d6ae57c103b15b4c886eeb5080d969a85dfb144f0dd7fd7e5fc01ce3fee8",
-				true,null,thresholdErrCnt,"LOCAL_DD");
-		imageRepository.save(imgDtl2);
+		/*ImageDetails imgDtl2 = new ImageDetails("2760d6ae57c103b15b4c886eeb5080d969a85dfb144f0dd7fd7e5fc01ce3fee8",
+				true,thresholdErrCnt,"LOCAL_DD",0);
+		imageRepository.save(imgDtl2);*/
 	}
 
 
