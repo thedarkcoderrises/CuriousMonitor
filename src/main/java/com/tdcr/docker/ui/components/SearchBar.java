@@ -2,6 +2,7 @@ package com.tdcr.docker.ui.components;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -105,4 +106,5 @@ public class SearchBar extends PolymerTemplate<SearchBar.Model> {
 	public ComboBox<String> getComboBox() {
 		return comboBox;
 	}
+
 }

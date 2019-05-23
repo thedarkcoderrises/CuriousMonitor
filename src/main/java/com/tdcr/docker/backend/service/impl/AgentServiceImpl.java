@@ -48,7 +48,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
     @Value("${thresholdErrCnt:4}")
     int thresholdErrCnt;
 
-    @Value("${checkInterval:30000}")
+    @Value("${checkInterval:60000}")
     int checkInterval;
 
 //    Map<String,String> svcHealthMap = new HashMap<>();

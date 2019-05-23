@@ -115,7 +115,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		initGridDetails();
 		setupSearchBar();
 		initDockerInfo();
-		initImageContainerChart();
+//		initImageContainerChart();
 	}
 
 	private void initImageContainerChart() {

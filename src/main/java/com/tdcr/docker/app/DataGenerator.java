@@ -1,8 +1,11 @@
 package com.tdcr.docker.app;
 
+import com.tdcr.docker.backend.data.EventState;
 import com.tdcr.docker.backend.data.Role;
+import com.tdcr.docker.backend.data.entity.Event;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.data.entity.User;
+import com.tdcr.docker.backend.repositories.EventsRepository;
 import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.repositories.UserRepository;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -11,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Random;
 
 @SpringComponent
@@ -22,16 +27,18 @@ public class DataGenerator implements HasLogger {
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
 	private ImageRepository imageRepository;
+	private EventsRepository eventsRepository;
 
 	@Value("${thresholdErrCnt:4}")
 	int thresholdErrCnt;
 
 	@Autowired
 	public DataGenerator(UserRepository userRepository,
-                         PasswordEncoder passwordEncoder, ImageRepository imageRepository) {
+                         PasswordEncoder passwordEncoder, ImageRepository imageRepository, EventsRepository eventsRepository) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.imageRepository = imageRepository;
+		this.eventsRepository = eventsRepository;
 	}
 
 	@PostConstruct
@@ -45,9 +52,38 @@ public class DataGenerator implements HasLogger {
 		createAdmin(userRepository, passwordEncoder);
 		createChecker(userRepository,passwordEncoder);
 		setSocatSubscription();
+		createEvents();
 		getLogger().info("Generated demo data");
 	}
 
+	private void createEvents() {
+		LocalDate now = LocalDate.now();
+		LocalDate oldestDate = LocalDate.now().minusDays(1);
+		Event event =new Event();
+			event.setState(EventState.CREATED);
+			event.setDueDate(now);
+			event.setDueTime(LocalTime.of(8, 0));
+			event.setContainerName("test");
+			event.setShortDesc("TestingEventPage");
+			event.setImageName("TestImage");
+		eventsRepository.save(event);
+		event =new Event();
+		event.setState(EventState.STARTED);
+		event.setDueDate(now);
+		event.setDueTime(LocalTime.of(9, 0));
+		event.setContainerName("test");
+		event.setShortDesc("TestingEventPage2");
+		event.setImageName("TestImage");
+		eventsRepository.save(event);
+		event =new Event();
+		event.setState(EventState.STOPPED);
+		event.setDueDate(oldestDate);
+		event.setDueTime(LocalTime.of(10, 0));
+		event.setContainerName("test");
+		event.setShortDesc("TestingEventPage3");
+		event.setImageName("TestImage");
+		eventsRepository.save(event);
+	}
 
 
 	private void setSocatSubscription() {

@@ -26,6 +26,8 @@ public class AppConst {
     public static final String SELECT_PH = "Select..";
     public static final String DOCKER_DAEMON_STR = "Daemon";
     public static final String ZERO_STR = "0";
+    public static final String PAGE_EVENTS = "events";
+    public static final String TITLE_EVENTS = "Events";
     public static int NOTIFICATION_DURATION = 4000;
 
     public static final String ENTITY_NOT_FOUND = "The selected entity was not found.";

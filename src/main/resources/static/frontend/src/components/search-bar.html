@@ -85,6 +85,14 @@
             display: none;
         }
 
+        .hide-action-btn{
+            display: none;
+        }
+
+        .hide-check-box{
+         display: none;
+        }
+
         .drop-down {
           width: 100%;
           max-width: 200px;
@@ -97,7 +105,7 @@
  <vaadin-text-field id="field" class="field" placeholder="[[fieldPlaceholder]]" value="{{fieldValue}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur" theme="white">
   <iron-icon icon$="[[fieldIcon]]" slot="prefix" icon="vaadin:search"></iron-icon>
  </vaadin-text-field>
- <vaadin-checkbox class="checkbox desktop" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur">
+ <vaadin-checkbox class="checkbox desktop" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur" id="checkBoxDesk">
    [[checkboxText]] 
  </vaadin-checkbox>
  <vaadin-button id="clear" class="clear-btn" theme="tertiary">
@@ -108,7 +116,7 @@
  </vaadin-button>
  <vaadin-combo-box id="combobox" style="width:20%" placeholder="Select.." class="drop-down"></vaadin-combo-box>
 </div>
-<vaadin-checkbox class="checkbox mobile" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur">
+<vaadin-checkbox class="checkbox mobile" checked="{{checkboxChecked}}" on-focus="_onFieldFocus" on-blur="_onFieldBlur" id="checkbox">
   [[checkboxText]] 
 </vaadin-checkbox>
 </template>

@@ -6,6 +6,8 @@ import com.google.gson.JsonArray;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class DataUtil {
 
@@ -26,4 +28,12 @@ public class DataUtil {
     public static String getFullMonthName(LocalDate date) {
         return date.getMonth().getDisplayName(TextStyle.FULL, AppConst.APP_LOCALE);
     }
+
+    public static <S, T> T convertIfNotNull(S source, Function<S, T> converter) {
+        return convertIfNotNull(source, converter, () -> null);
+    }
+    public static <S, T> T convertIfNotNull(S source, Function<S, T> converter, Supplier<T> nullValueSupplier) {
+        return source != null ? converter.apply(source) : nullValueSupplier.get();
+    }
+
 }
