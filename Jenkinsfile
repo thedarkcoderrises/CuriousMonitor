@@ -34,7 +34,7 @@ pipeline {
         stage('Containerising CuriousMonitor') {
           agent any
            steps {
-                   sh 'docker run -d -p 8082:8081 -v /home/ec2-user/logs:/logs -e HOST_NAME=socat --name curious --link=socat curious:1.0'
+                   sh 'sh dockercompose.sh'
                  }
          }
     }
