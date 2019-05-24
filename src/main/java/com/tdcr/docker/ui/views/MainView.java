@@ -6,6 +6,8 @@ import com.tdcr.docker.app.security.SecurityUtils;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.ui.components.AppCookieConsent;
+import com.tdcr.docker.ui.views.dashboard.DashboardView;
+import com.tdcr.docker.ui.views.dockContainers.ContainerView;
 import com.tdcr.docker.ui.views.users.UserView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -47,11 +49,15 @@ public class MainView extends AbstractAppRouterLayout implements HasLogger {
         appLayout.setBranding(new Span(AppConst.APP_NAME));
 
         if (SecurityUtils.isUserLoggedIn()) {
-            setMenuItem(appLayoutMenu,
-                    new AppLayoutMenuItem(VaadinIcon.CUBES.create(),
-                            AppConst.TITLE_CONTAINER, AppConst.PAGE_CONTAINERS));
+            if (SecurityUtils.isAccessGranted(ContainerView.class)) {
+                setMenuItem(appLayoutMenu,
+                        new AppLayoutMenuItem(VaadinIcon.CUBES.create(),
+                                AppConst.TITLE_CONTAINER, AppConst.PAGE_CONTAINERS));
+            }
+
             setMenuItem(appLayoutMenu, new AppLayoutMenuItem(VaadinIcon.LINE_BAR_CHART.create(),
-                    AppConst.TITLE_DASHBOARD, AppConst.PAGE_DASHBOARD));
+                        AppConst.TITLE_DASHBOARD, AppConst.PAGE_DASHBOARD));
+
             setMenuItem(appLayoutMenu,new AppLayoutMenuItem(VaadinIcon.FLAG.create(),
                     AppConst.TITLE_EVENTS, AppConst.PAGE_EVENTS));
             if (SecurityUtils.isAccessGranted(UserView.class)) {

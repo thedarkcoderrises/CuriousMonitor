@@ -19,13 +19,18 @@
         .layout-with-border {
             border: 1px solid blue;
         }
+        .wrapper {
+        display: flex;
+        padding: var(--lumo-space-l) var(--lumo-space-m);
+        cursor: pointer;
+      }
     </style>
 <div style="width: 100%; height: 100%;">
  <search-bar id="search" field-placeholder="Search">
    &gt; 
  </search-bar>
  <vaadin-dialog on-opened-changed="_onDialogOpen" id="dialog"></vaadin-dialog>
- <div style="width: 100%; height: 100%;">
+ <div class="wrapper" style="width: 100%; height: 100%;">
   <vaadin-grid id="grid" style="height:100%; width:68%"></vaadin-grid>
  </div>
 </div>

@@ -1,8 +1,6 @@
 package com.tdcr.docker.backend.service.impl;
 
-import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.InspectImageResponse;
 import com.orbitz.consul.AgentClient;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
@@ -12,8 +10,8 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.backend.data.entity.AgentFeed;
 import com.tdcr.docker.backend.data.entity.DockContainer;
-import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.data.entity.ErrorDetails;
+import com.tdcr.docker.backend.data.entity.ImageDetails;
 import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.repositories.IncidentRepository;
 import com.tdcr.docker.backend.service.AgentService;
@@ -25,7 +23,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +81,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                 dockerService.updateDockerClient(dockerDaemonName);
                                 InspectContainerResponse containerResponse =
                                         dockerService.inspectOnContainerId(containerId);
-                               ImageDetails imageDetails = dockerService.getImageDetails(containerResponse.getImageId());
+                               ImageDetails imageDetails = dockerService.getImageDetails(containerResponse.getImageId().replace(AppConst.SHA_256,AppConst.EMPTY_STR));
                                if(response.getResponse().size()-1 < imageDetails.getTotalContainersList().size()){
                                    for (String containerIdStr:
                                         imageDetails.getTotalContainersList()) {
@@ -92,6 +89,8 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                            DockContainer dc = new DockContainer();
                                            dc.setImageId(imageDetails.getImageId());
                                            dc.setContainerId(containerIdStr);
+                                           dc.setContainerName(containerIdStr);
+                                           dc.setImageName(imageDetails.getImageId());
                                            dockerService.updateContainerStatus(dc,true);
                                        }
                                    }

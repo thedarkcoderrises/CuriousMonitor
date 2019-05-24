@@ -610,8 +610,10 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 			@Override
 			public void execute() {
 				if(imageDetails!=null){
+					int newPoint = Integer.valueOf(imageDetails.getTotalCloseIncidents()) ==0? 1:Integer.valueOf(imageDetails.getTotalCloseIncidents());
 					configuration.fireAxesRescaled(configuration.getyAxis(),
-							0,Integer.valueOf(imageDetails.getTotalIncidents()),true,true);
+							0,newPoint,true,true);
+
 					ls.updatePoint(0,Integer.valueOf(imageDetails.getTotalCloseIncidents()));
 				}else{
 					configuration.fireAxesRescaled(configuration.getyAxis(),

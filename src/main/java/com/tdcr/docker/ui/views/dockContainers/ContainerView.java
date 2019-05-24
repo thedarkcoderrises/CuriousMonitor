@@ -2,6 +2,7 @@ package com.tdcr.docker.ui.views.dockContainers;
 
 import com.github.dockerjava.api.model.Statistics;
 import com.tdcr.docker.app.HasLogger;
+import com.tdcr.docker.backend.data.Role;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
@@ -40,6 +41,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
@@ -58,6 +60,7 @@ import java.util.concurrent.Future;
 @HtmlImport("src/views/dock-container/container-view.html")
 @Route(value = AppConst.PAGE_CONTAINERS, layout = MainView.class)
 @PageTitle(AppConst.TITLE_CONTAINER)
+@Secured({Role.ADMIN,Role.CHECKER})
 public class ContainerView extends PolymerTemplate<TemplateModel> implements EntityView<DockContainer>, HasLogger {
 
     @Id("search")

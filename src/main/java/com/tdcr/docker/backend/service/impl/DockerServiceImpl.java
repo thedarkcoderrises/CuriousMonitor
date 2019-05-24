@@ -4,15 +4,20 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.*;
 import com.tdcr.docker.app.HasLogger;
+import com.tdcr.docker.backend.data.EventState;
 import com.tdcr.docker.backend.data.entity.DockContainer;
 import com.tdcr.docker.backend.data.entity.DockImage;
+import com.tdcr.docker.backend.data.entity.Event;
 import com.tdcr.docker.backend.data.entity.ImageDetails;
+import com.tdcr.docker.backend.repositories.EventsRepository;
 import com.tdcr.docker.backend.repositories.ImageRepository;
 import com.tdcr.docker.backend.service.DockerService;
 import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.FirstObjectResultCallback;
 import com.tdcr.docker.backend.utils.LogContainerCallback;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.notification.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +50,9 @@ public class DockerServiceImpl implements DockerService, HasLogger {
 
     @Autowired
     KafkaTemplate kafkaTemplate;
+
+    @Autowired
+    EventsRepository eventsRepository;
 
     @Value("${thresholdErrCnt:4}")
     int thresholdErrCnt;
@@ -137,18 +147,24 @@ public class DockerServiceImpl implements DockerService, HasLogger {
             //TODO
             return null;
         }
-        notifyConttainerStatus(container,cmdStr);
+        notifyContainerStatus(container,cmdStr);
         return container.getContainerId();
     }
 
-    private void notifyConttainerStatus(DockContainer container, String cmdStr) {
+    private void notifyContainerStatus(DockContainer container, String cmdStr) {
 
         ImageDetails imageDetails = getImageDetails(container.getImageId());
         if(imageDetails == null) return;
         if(imageDetails.isSubscribed()){
-            kafkaTemplate.send("CuriousNotifyTopic",""+System.currentTimeMillis(),
-                    String.format("Container %s status now: %s",container.getContainerName(),cmdStr));
-            getLogger().info("RaiseIncident Event sent");
+            String shortDesc = String.format("Container %s status now: %s",container.getContainerName(),cmdStr);
+            kafkaTemplate.send("CuriousNotifyTopic",""+System.currentTimeMillis(),shortDesc);
+            EventState state;
+            if("Running".equals(cmdStr)){
+                state = EventState.STARTED;
+            }else{
+                state = EventState.STOPPED;
+            }
+            eventsRepository.save(new Event(LocalDate.now(), LocalTime.now(), state,shortDesc,container.getImageName(),container.getContainerName()));
         }
     }
 
@@ -242,7 +258,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
                     }
                     dockImage.getContainerList().add(ctnr.getId());
                     if(imageDetails == null){
-                        imageDetails   = new ImageDetails(image.getId(),true,4,dockerDaemon,ctnr.getId());
+                        imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,ctnr.getId());
                     }else{
                         imageDetails.getTotalContainersList().add(ctnr.getId());
                     }
@@ -252,7 +268,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
             dockImage.setRunningContainerCount(runningContainerCnt);
             dockImage.setTotalContainerCount((runningContainerCnt+stopContainerCnt));
             if(imageDetails == null){
-                imageDetails   = new ImageDetails(image.getId(),false,4,dockerDaemon,null);
+                imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,null);
             }
             imageRepository.save(imageDetails);
         }

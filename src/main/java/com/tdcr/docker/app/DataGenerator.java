@@ -58,30 +58,13 @@ public class DataGenerator implements HasLogger {
 
 	private void createEvents() {
 		LocalDate now = LocalDate.now();
-		LocalDate oldestDate = LocalDate.now().minusDays(1);
 		Event event =new Event();
 			event.setState(EventState.CREATED);
 			event.setDueDate(now);
 			event.setDueTime(LocalTime.of(8, 0));
-			event.setContainerName("test");
-			event.setShortDesc("TestingEventPage");
-			event.setImageName("TestImage");
-		eventsRepository.save(event);
-		event =new Event();
-		event.setState(EventState.STARTED);
-		event.setDueDate(now);
-		event.setDueTime(LocalTime.of(9, 0));
-		event.setContainerName("test");
-		event.setShortDesc("TestingEventPage2");
-		event.setImageName("TestImage");
-		eventsRepository.save(event);
-		event =new Event();
-		event.setState(EventState.STOPPED);
-		event.setDueDate(oldestDate);
-		event.setDueTime(LocalTime.of(10, 0));
-		event.setContainerName("test");
-		event.setShortDesc("TestingEventPage3");
-		event.setImageName("TestImage");
+			event.setContainerName("Curious");
+			event.setShortDesc("Curious Monitor is up!");
+			event.setImageName("Curious");
 		eventsRepository.save(event);
 	}
 
