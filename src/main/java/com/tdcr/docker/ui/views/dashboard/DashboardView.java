@@ -634,7 +634,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 	}
 
 	private void initDataProvider() {
-		dockerService.updateDockerClient("LOCAL_DD");
+		dockerService.updateDockerClient(searchBar.getComboBox().getValue());
 		this.dataProvider= DataProvider.ofCollection(dockerService.listAllImages(searchBar.getComboBox().getValue()));
 		grid.setDataProvider(dataProvider);
 	}
