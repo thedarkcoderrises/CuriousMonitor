@@ -18,7 +18,7 @@ docker restart zookeeper
 docker restart kafka
 #docker network connect bunit kafka
 
-docker run -d -p 8081:8081 -v /home/ec2-user/logs:/logs -e HOST_NAME=socat -e kafka.url=kafka:9092 -e AWS_DD=13.126.200.232 --name curious --link=socat --link=consul --link=kafka curious:1.0
+docker run -d -p 8081:8081 -v /home/ec2-user/logs:/logs -e HOST_NAME=socat -e kafka.url=kafka:9092 -e AWS_DD=13.232.243.73 --name curious --link=socat --link=consul --link=kafka curious:1.0
 
 docker network connect bunit curious
 
