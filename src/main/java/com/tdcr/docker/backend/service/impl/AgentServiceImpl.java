@@ -146,9 +146,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                         imgDtl.getImageId(),
                         imgDtl.getErrorMap()));
             }
-        }/*else{
-            imgDtl = new ImageDetails(feed.getImageId(),false,thresholdErrCnt,feed.getDockerDaemon(),0);
-        }*/
+        }
         imageRepository.save(imgDtl);
     }
 

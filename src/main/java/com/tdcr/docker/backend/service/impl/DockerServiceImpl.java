@@ -204,12 +204,13 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     public void setSubscriptionToContainer(String imageId, boolean subscription, String dockerDaemon) {
         Optional<ImageDetails> opt = imageRepository.findById(imageId);
         ImageDetails imageDetails;
-      /*  if (!opt.isPresent()){
-            imageDetails = new ImageDetails(imageId,subscription,thresholdErrCnt,dockerDaemon,0);
-        }else{*/
             imageDetails = opt.get();
-//        }
         imageDetails.setSubscribed(subscription);
+        String subscriptionStr = "Subscription Removed";
+        if(subscription){
+            subscriptionStr ="is now Subscribed";
+        }
+        eventsRepository.save(new Event(LocalDate.now(), LocalTime.now(), EventState.UPDATED,subscriptionStr,AppConst.EMPTY_STR,imageDetails.getImageId()));
         imageRepository.save(imageDetails);
     }
 

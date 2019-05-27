@@ -5,7 +5,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import java.util.Locale;
 
 public enum EventState {
-	CREATED,STARTED,STOPPED;
+	CREATED,STARTED,STOPPED,UPDATED;
 
 	/**
 	 * Gets a version of the enum identifier in a human friendly format.
