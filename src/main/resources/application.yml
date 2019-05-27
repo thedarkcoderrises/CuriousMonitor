@@ -4,9 +4,9 @@ server.port: 8081
 
 
 dockerDaemonMap:
-  ABHI_DD: ${ABHI_DD}
+#  ABHI_DD: ${ABHI_DD}
   AWS_DD: ${AWS_DD}
-#  AWS_DD: ${AWS_DD}
+  OTHER_DD: ${OTHER_DD}
 
 kafka.url: ${kafka}
 
