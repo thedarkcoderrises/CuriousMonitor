@@ -123,7 +123,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
             grid.setDataProvider(dataProvider);
         });
         searchBar.addSearchValueChangeListener(e ->
-                dataProvider.setFilter(DockContainer::getContainerName,
+                dataProvider.setFilter(DockContainer::getContainerId,
                         s -> DataUtil.caseInsensitiveContains(s, searchBar.getFilter())));
         this.dockerComboBox =searchBar.getComboBox();
         dockerComboBox.setItems(dockerService.getDockerDaemons());
@@ -149,6 +149,8 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
     }
 
     private void addGridColumns() {
+        grid.addColumn(DockContainer::getContainerId)
+                .setWidth("200px").setHeader("ContainerID").setFlexGrow(3).setSortable(true);
         grid.addColumn(DockContainer::getContainerName)
                 .setWidth("270px").setHeader("ContainerName").setFlexGrow(3).setSortable(true);
         grid.addColumn(dc -> dc.getImageName())

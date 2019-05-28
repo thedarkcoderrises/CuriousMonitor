@@ -117,7 +117,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		initGridDetails();
 		setupSearchBar();
 		initDockerInfo();
-//		initImageContainerChart();
+		initImageContainerChart();
 	}
 
 	private void initImageContainerChart() {
@@ -173,7 +173,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 						nContainers++;
 
 						Statistics stats = dockerService.getContainerRawStats(dockContainer.getContainerId());
-						int netWork = Integer.parseInt(String.valueOf(ComputeStats.calcNetworkStats(stats).split("/")[0].split("[a-zA-Z]")[0]));
+						Number netWork = new Float(String.valueOf(ComputeStats.calcNetworkStats(stats).split("/")[0].split("[a-zA-Z]")[0]));
 						countryItem = new DataSeriesItem(dockContainer.getContainerName(), netWork);
 						detailsSeries = new DataSeries("Details");
 						detailsSeries.setId(dockContainer.getContainerName() + " Details");
@@ -612,7 +612,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 				dockerService.updateDockerClient(e.getValue());
 				updateData(e.getValue());
 				searchBar.getActionButton().click();
-//				initImageContainerChart();
+				initImageContainerChart();
 			}
 		});
 	}
