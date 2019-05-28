@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.print.Doc;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -207,7 +208,8 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
     private void updateStatus(DockContainer container) {
         if(container == null) return;
-        if(container.getContainerName().contains("socat") || container.getContainerName().contains("dw") || isLinked(container)){
+        List<String> lst = Arrays.asList("socat","curious","kafka","consul","ngx");
+        if(lst.contains(container.getContainerName())){
             Notification.show("Inavlid action!");
             return;
         }
