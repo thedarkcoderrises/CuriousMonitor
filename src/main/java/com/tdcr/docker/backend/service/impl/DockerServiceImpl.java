@@ -16,8 +16,6 @@ import com.tdcr.docker.backend.utils.AppConst;
 import com.tdcr.docker.backend.utils.ComputeStats;
 import com.tdcr.docker.backend.utils.FirstObjectResultCallback;
 import com.tdcr.docker.backend.utils.LogContainerCallback;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.notification.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -313,14 +311,15 @@ public class DockerServiceImpl implements DockerService, HasLogger {
 
     @Override
     public void cloneContainerOnImage(DockImage image, boolean status) {
-        /*CreateContainerResponse container =dockerClient.createContainerCmd("my-sd-svc:1").
-                withName("mysd3").withEnv("CONSUL=consul").withBinds(Bind.parse("/var/run/docker.sock:/var/run/docker.sock:ro")).
-                withLinks(Link.parse("consul:consul")).withNetworkMode("bunit").exec();*/
         InspectContainerResponse inspectResponse =inspectOnContainerId(image.getContainerList().get(0));
         DockContainer dc = new DockContainer();
         if(status){
-            CreateContainerResponse container = cloneContainer(inspectResponse);;
+          String containerName = inspectResponse.getName().replace(AppConst.FWD_SLASH,AppConst.EMPTY_STR)+df2.format(Math.random()*9+1);
+            CreateContainerResponse container = cloneContainer(inspectResponse,containerName);
+            eventsRepository.save(new Event(LocalDate.now(), LocalTime.now(), EventState.CREATED,
+                    "Container created with ID :"+container.getId()+", name :"+containerName,AppConst.EMPTY_STR,AppConst.EMPTY_STR));
             dc.setContainerId(container.getId());
+            dc.setContainerName(containerName);
         }else{
             dc.setContainerId(image.getContainerList().get(image.getContainerList().size()-1));
         }
@@ -330,9 +329,9 @@ public class DockerServiceImpl implements DockerService, HasLogger {
     }
 
     @Override
-    public CreateContainerResponse cloneContainer(InspectContainerResponse response) {
+    public CreateContainerResponse cloneContainer(InspectContainerResponse response, String containerName) {
         CreateContainerCmd cmd =dockerClient.createContainerCmd(response.getConfig().getImage()).
-                withName(response.getName().replace(AppConst.FWD_SLASH,AppConst.EMPTY_STR)+df2.format(Math.random()*9+1));
+                withName(containerName);
         for (Bind bind:
                 response.getHostConfig().getBinds()) {
             cmd.withBinds(bind);

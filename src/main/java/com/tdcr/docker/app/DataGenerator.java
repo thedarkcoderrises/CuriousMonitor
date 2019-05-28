@@ -61,7 +61,7 @@ public class DataGenerator implements HasLogger {
 		Event event =new Event();
 			event.setState(EventState.CREATED);
 			event.setDueDate(now);
-			event.setDueTime(LocalTime.of(8, 0));
+			event.setDueTime(LocalTime.now());
 			event.setContainerName("Curious");
 			event.setShortDesc("Curious Monitor is up!");
 			event.setImageName("Curious");

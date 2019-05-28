@@ -19,5 +19,6 @@ elk.url: https://search-jbtdcresdomain-6ghjjpn3wxczrz4y2nsoucocue.ap-south-1.es.
 
 
 thresholdErrCnt: 5
+checkInterval: 30000
 
 x-axis: 5

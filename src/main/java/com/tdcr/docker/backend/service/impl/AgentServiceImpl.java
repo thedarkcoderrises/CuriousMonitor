@@ -45,10 +45,8 @@ public class AgentServiceImpl implements AgentService, HasLogger {
     @Value("${thresholdErrCnt:4}")
     int thresholdErrCnt;
 
-    @Value("${checkInterval:60000}")
+    @Value("${checkInterval:30000}")
     int checkInterval;
-
-//    Map<String,String> svcHealthMap = new HashMap<>();
 
     @Autowired
     Map<String,Consul> consulClienttMap;
@@ -76,22 +74,26 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                 com.orbitz.consul.model.health.Service service =
                                         agentClient.getServices().get(
                                                 hc.getCheckId().replace("service:",
-                                                        ""));
+                                                        AppConst.EMPTY_STR));
                                 String containerId = service.getAddress();
                                 dockerService.updateDockerClient(dockerDaemonName);
                                 InspectContainerResponse containerResponse =
                                         dockerService.inspectOnContainerId(containerId);
-                               ImageDetails imageDetails = dockerService.getImageDetails(containerResponse.getImageId().replace(AppConst.SHA_256,AppConst.EMPTY_STR));
+                               ImageDetails imageDetails = dockerService.getImageDetails(containerResponse.getImageId().
+                                       replace(AppConst.SHA_256,AppConst.EMPTY_STR));
                                if(response.getResponse().size()-1 < imageDetails.getTotalContainersList().size()){
                                    for (String containerIdStr:
                                         imageDetails.getTotalContainersList()) {
-                                       if(!containerId.equals(containerIdStr)){
+                                       if(!containerIdStr.startsWith(containerId)){
                                            DockContainer dc = new DockContainer();
                                            dc.setImageId(imageDetails.getImageId());
                                            dc.setContainerId(containerIdStr);
                                            dc.setContainerName(containerIdStr);
                                            dc.setImageName(imageDetails.getImageId());
                                            dockerService.updateContainerStatus(dc,true);
+                                           getLogger().info("Starting container {}",containerId);
+                                       }else{
+                                           getLogger().info("Passing containerID {}",containerId);
                                        }
                                    }
                                }
@@ -102,10 +104,12 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                 dockerService.updateContainerStatus(dc,true);*/
                             }
                         } catch (Exception e) {
+                            getLogger().error(e.getMessage());
                         }finally {
                             try {
                                 Thread.sleep(checkInterval);
                             } catch (InterruptedException e) {
+                                getLogger().error(e.getMessage());
                             }
                         }
                     }
@@ -116,10 +120,6 @@ public class AgentServiceImpl implements AgentService, HasLogger {
 
     }
 
-    private void raiseInc(ErrorDetails errorDetails) {
-        kafkaTemplate.send("RaiseIncTopic",""+System.currentTimeMillis(), errorDetails);
-        getLogger().info("RaiseIncident Event sent");
-    }
 
     @Override
     public void saveImageFeed(AgentFeed feed) {
@@ -132,11 +132,11 @@ public class AgentServiceImpl implements AgentService, HasLogger {
             int totalErrorCnt =0;
             for (String errorType :
                     feed.getErrorMap().keySet()) {
-                int temp = null != imgDtl.getErrorMap().get(errorType)? imgDtl.getErrorMap().get(errorType):0;
-                int feedCount = null!=feed.getErrorMap().get(errorType)?feed.getErrorMap().get(errorType):0;
-                int sum = temp +feedCount;
-                imgDtl.getErrorMap().put(errorType,feedCount);
-                totalErrorCnt += sum;
+                int temp = (null != imgDtl.getErrorMap().get(errorType))? imgDtl.getErrorMap().get(errorType):0;// previous feed
+                int feedCount = (null!=feed.getErrorMap().get(errorType))?feed.getErrorMap().get(errorType):0;// current feed
+                int sum = temp +feedCount;// total
+                imgDtl.getErrorMap().put(errorType,feedCount);// save current feed
+                totalErrorCnt += sum;// accumulate
             }
             if(!imgDtl.getDockerDaemonList().contains(feed.getDockerDaemon())){
                 imgDtl.getDockerDaemonList().add(feed.getDockerDaemon());
@@ -145,9 +145,15 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                 raiseInc(new ErrorDetails(
                         imgDtl.getImageId(),
                         imgDtl.getErrorMap()));
+                imgDtl.getErrorMap().clear();// clear error map as INC is raised
             }
         }
         imageRepository.save(imgDtl);
+    }
+
+    private void raiseInc(ErrorDetails errorDetails) {
+        kafkaTemplate.send("RaiseIncTopic",AppConst.EMPTY_STR+System.currentTimeMillis(), errorDetails);
+        getLogger().info("RaiseIncident Event sent");
     }
 
 

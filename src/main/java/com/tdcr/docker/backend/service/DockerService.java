@@ -55,6 +55,6 @@ public interface DockerService {
 
     void cloneContainerOnImage(DockImage image, boolean added);
 
-    public CreateContainerResponse cloneContainer(InspectContainerResponse response);
+    public CreateContainerResponse cloneContainer(InspectContainerResponse response, String containerName);
 
 }

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 
+import java.util.List;
+
 @SpringComponent
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class EventPresenter {
@@ -30,8 +32,8 @@ public class EventPresenter {
         this.currentUser =currentUser;
         this.repository = repository;
         headersGenerator.resetHeaderChain(true);
-        this.dataProvider = DataProvider.ofCollection(repository.findAll());
-        headersGenerator.ordersRead(repository.findAll());
+        List<Event> lst = repository.findAll();
+        headersGenerator.ordersRead(lst);
     }
 
     public EventsCardHeader getHeaderByEventId(Long id) {
@@ -42,6 +44,11 @@ public class EventPresenter {
     public void init(EventsView view) {
         this.entityPresenter.setView(view);
         this.view = view;
+        updateDataGrid();
+    }
+
+    public void updateDataGrid() {
+        this.dataProvider = DataProvider.ofCollection(repository.findAll());
         view.getGrid().setDataProvider(dataProvider);
     }
 }

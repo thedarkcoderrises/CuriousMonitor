@@ -441,9 +441,10 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 			@Override
 			public void execute() {
 				if(imageDetails!=null){
-					int newPoint = Integer.valueOf(imageDetails.getTotalCloseIncidents()) ==0? 1:Integer.valueOf(imageDetails.getTotalCloseIncidents());
+					int close = Integer.valueOf(imageDetails.getTotalCloseIncidents()) ==0? 1:Integer.valueOf(imageDetails.getTotalCloseIncidents());
+					int open = Integer.valueOf(imageDetails.getTotalOpenIncidents());
 					configuration.fireAxesRescaled(configuration.getyAxis(),
-							0,newPoint,true,true);
+							open,close,true,true);
 
 					ls.updatePoint(0,Integer.valueOf(imageDetails.getTotalCloseIncidents()));
 				}else{
@@ -487,11 +488,6 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 			});
 			return minContainer;
 		})).setHeader("Container Count").setWidth("120px");
-		/*grid.addColumn(new ComponentRenderer<>(image -> {
-			Button save = new Button("");
-			save.setIcon(VaadinIcon.ENTER_ARROW.create());
-			return save;
-		})).setTextAlign(ColumnTextAlign.CENTER).setWidth("50px");*/
 		grid.addColumn(DockImage::getSize).setHeader("Size")
 				.setWidth("80px").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
 		grid.addColumn(new ComponentRenderer<>(image -> {
