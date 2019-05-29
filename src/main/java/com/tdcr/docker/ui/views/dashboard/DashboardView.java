@@ -117,7 +117,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		initGridDetails();
 		setupSearchBar();
 		initDockerInfo();
-		initImageContainerChart();
+//		initImageContainerChart();
 	}
 
 	private void initImageContainerChart() {
@@ -444,7 +444,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 					int close = Integer.valueOf(imageDetails.getTotalCloseIncidents()) ==0? 1:Integer.valueOf(imageDetails.getTotalCloseIncidents());
 					int open = Integer.valueOf(imageDetails.getTotalOpenIncidents());
 					configuration.fireAxesRescaled(configuration.getyAxis(),
-							open,close,true,true);
+							open,(open+close),true,true);
 
 					ls.updatePoint(0,Integer.valueOf(imageDetails.getTotalCloseIncidents()));
 				}else{
@@ -559,6 +559,9 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		ComboBox<String> incidents = new ComboBox<>();
 		incidents.setLabel("OtherIncidents");
 
+
+
+
 		FormLayout form = new FormLayout(imageName, incidentNumber,category,caller,assignedto,incState, shortDescription, incidents);
 		Map<String,Incident> incNumberMap= new HashMap<>();
 		for (Incident incident:
@@ -567,10 +570,10 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 		}
 
 		incidents.setItems(incNumberMap.keySet());
-		updateIncFormFields(imageDetails.getIncidents().get(0),incidentNumber,category,caller,assignedto,incState, shortDescription);
+		updateIncFormFields(imageDetails.getIncidents().get(0),incidentNumber,category,caller,assignedto,incState, shortDescription,null);
 		incidents.addValueChangeListener( e ->{
 			if(StringUtils.isEmpty(e.getValue())) return;
-			updateIncFormFields(incNumberMap.get(e.getValue()), incidentNumber,category,caller,assignedto,incState, shortDescription);
+			updateIncFormFields(incNumberMap.get(e.getValue()), incidentNumber,category,caller,assignedto,incState, shortDescription,null);
 		});
 
 		incDialog.add(form);
@@ -581,7 +584,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 
 	private void updateIncFormFields(Incident inc, TextField incidentNumber,
 									 TextField category, TextField caller, TextField assignedto,
-									 TextField incState, TextField shortDescription) {
+									 TextField incState, TextField shortDescription, Label hyperLink) {
 		incidentNumber.setValue(inc.getIncNumber());
 		shortDescription.setValue(inc.getShortDescription());
 		category.setValue(inc.getCategory());
@@ -612,7 +615,7 @@ public class DashboardView extends PolymerTemplate<TemplateModel> implements Has
 				dockerService.updateDockerClient(e.getValue());
 				updateData(e.getValue());
 				searchBar.getActionButton().click();
-				initImageContainerChart();
+//				initImageContainerChart();
 			}
 		});
 	}

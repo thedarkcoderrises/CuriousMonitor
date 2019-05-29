@@ -19,6 +19,7 @@ public class ImageDetails implements Serializable {
     @Size(max = 255)
     @Column(unique = true)
     private String imageId;
+    private String imageName;
 
     @NotNull
     private boolean isSubscribed;
@@ -47,11 +48,12 @@ public class ImageDetails implements Serializable {
 
     public ImageDetails(){}
 
-    public ImageDetails(String imageId, boolean subscription,int thresholdErrCnt,String dockerDaemon,String containerId) {
+    public ImageDetails(String imageId, boolean subscription,int thresholdErrCnt,String dockerDaemon,String containerId,String imageName) {
         this.imageId = imageId;
         this.isSubscribed = subscription;
         this.thresholdErrCnt = thresholdErrCnt;
-        this.totalContainersList.add(containerId);
+        addContainerToList(containerId);
+        this.imageName = imageName;
         this.getDockerDaemonList().add(dockerDaemon);
     }
 
@@ -139,5 +141,19 @@ public class ImageDetails implements Serializable {
 
     public List<String> getTotalContainersList() {
         return totalContainersList;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public void addContainerToList(String containersId) {
+        if(containersId != null && !this.totalContainersList.contains(containersId)){
+            this.totalContainersList.add(containersId);
+        }
     }
 }

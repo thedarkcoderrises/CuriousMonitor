@@ -210,7 +210,7 @@ public class ContainerView extends PolymerTemplate<TemplateModel> implements Ent
 
     private void updateStatus(DockContainer container) {
         if(container == null) return;
-        List<String> lst = Arrays.asList("socat","curious","kafka","consul","ngx");
+        List<String> lst = Arrays.asList("socat","curious","kafka","zookeeper","consul","ngx");
         if(lst.contains(container.getContainerName())){
             Notification.show("Inavlid action!");
             return;

@@ -1,6 +1,7 @@
 package com.tdcr.docker.app.consul;
 
 import com.orbitz.consul.Consul;
+import com.tdcr.docker.app.HasLogger;
 import com.tdcr.docker.app.docker.DockerConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +11,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class ConsulClientConfig {
+public class ConsulClientConfig implements HasLogger {
 
 
     public Consul getConsul(String host){
-        Consul.Builder consulBuilder = Consul.builder().withUrl("http://"+host+":8500");
-        Consul consul = consulBuilder.build();
+        Consul consul = null;
+        Consul.Builder consulBuilder = null;
+        String url = "http://"+host+":8500";
+        try{
+             consulBuilder =Consul.builder().withUrl(url);
+             consul = consulBuilder.build();
+        }catch(Exception e){
+            getLogger().error("Consul not reachable for provided URL {}",url);
+        }
         return consul;
     }
 

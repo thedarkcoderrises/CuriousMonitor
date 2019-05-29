@@ -56,9 +56,13 @@ public class AgentServiceImpl implements AgentService, HasLogger {
         dockerService.init();
         for (String dockerDaemonName : consulClienttMap.keySet()){
             Consul consul = consulClienttMap.get(dockerDaemonName);
+            if(consul == null) {
+                getLogger().info("Consul not reachable for running docker daemon on host {}",dockerDaemonName);
+                continue;
+            }
             HealthClient healthClient = consul.healthClient();
             AgentClient agentClient = consul.agentClient();
-            Thread checkThread = new Thread(new Runnable() {
+            Thread checkContainerStatusThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while(true){
@@ -71,10 +75,12 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                 if("serfHealth".equals(hc.getCheckId())) continue;
                                 getLogger().info("{} with id {} is {}",hc.getServiceName().get(),
                                         hc.getCheckId(),hc.getStatus());
+
                                 com.orbitz.consul.model.health.Service service =
                                         agentClient.getServices().get(
                                                 hc.getCheckId().replace("service:",
-                                                        AppConst.EMPTY_STR));
+                                                        AppConst.EMPTY_STR)); // get Service
+
                                 String containerId = service.getAddress();
                                 dockerService.updateDockerClient(dockerDaemonName);
                                 InspectContainerResponse containerResponse =
@@ -97,11 +103,6 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                        }
                                    }
                                }
-                              /*  CreateContainerResponse container = dockerService.cloneContainer(containerResponse);
-                                DockContainer dc = new DockContainer();
-                                dc.setContainerId(container.getId());
-                                dc.setImageId(containerResponse.getImageId());
-                                dockerService.updateContainerStatus(dc,true);*/
                             }
                         } catch (Exception e) {
                             getLogger().error(e.getMessage());
@@ -115,7 +116,49 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                     }
                 }
             });
-            checkThread.start();
+            checkContainerStatusThread.start();
+
+            /*Thread checkLoadThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while(true){
+                        try {
+                            ConsulResponse<List<HealthCheck>> response =
+                                    healthClient.getChecksByState(State.PASS);
+                            for (HealthCheck hc:
+                                    response.getResponse()) {
+                                String svcName = hc.getServiceName().get();
+                                if("serfHealth".equals(hc.getCheckId())) continue;
+                                getLogger().info("{} with id {} is {}",hc.getServiceName().get(),
+                                        hc.getCheckId(),hc.getStatus());
+
+                                com.orbitz.consul.model.health.Service service =
+                                        agentClient.getServices().get(
+                                                hc.getCheckId().replace("service:",
+                                                        AppConst.EMPTY_STR)); // get Service
+
+                                String containerId = service.getAddress();
+
+                              *//*  CreateContainerResponse container = dockerService.cloneContainer(containerResponse);
+                                DockContainer dc = new DockContainer();
+                                dc.setContainerId(container.getId());
+                                dc.setImageId(containerResponse.getImageId());
+                                dockerService.updateContainerStatus(dc,true);*//*
+                            }
+                        } catch (Exception e) {
+                            getLogger().error(e.getMessage());
+                        }finally {
+                            try {
+                                Thread.sleep(checkInterval);
+                            } catch (InterruptedException e) {
+                                getLogger().error(e.getMessage());
+                            }
+                        }
+                    }
+                }
+            });
+
+            checkLoadThread.start();*/
         }
 
     }
@@ -145,7 +188,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                 raiseInc(new ErrorDetails(
                         imgDtl.getImageId(),
                         imgDtl.getErrorMap()));
-                imgDtl.getErrorMap().clear();// clear error map as INC is raised
+//                imgDtl.getErrorMap().clear();// clear error map as INC is raised
             }
         }
         imageRepository.save(imgDtl);

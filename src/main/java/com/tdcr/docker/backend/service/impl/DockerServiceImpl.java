@@ -208,7 +208,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
         if(subscription){
             subscriptionStr ="is now Subscribed";
         }
-        eventsRepository.save(new Event(LocalDate.now(), LocalTime.now(), EventState.UPDATED,subscriptionStr,AppConst.EMPTY_STR,imageDetails.getImageId()));
+        eventsRepository.save(new Event(LocalDate.now(), LocalTime.now(), EventState.UPDATED,subscriptionStr+" for :"+imageDetails.getImageName(),AppConst.EMPTY_STR,AppConst.EMPTY_STR));
         imageRepository.save(imageDetails);
     }
 
@@ -257,9 +257,9 @@ public class DockerServiceImpl implements DockerService, HasLogger {
                     }
                     dockImage.getContainerList().add(ctnr.getId());
                     if(imageDetails == null){
-                        imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,ctnr.getId());
+                        imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,ctnr.getId(),ctnr.getImage());
                     }else{
-                        imageDetails.getTotalContainersList().add(ctnr.getId());
+                        imageDetails.addContainerToList(ctnr.getId());
                     }
                 }
             }
@@ -267,7 +267,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
             dockImage.setRunningContainerCount(runningContainerCnt);
             dockImage.setTotalContainerCount((runningContainerCnt+stopContainerCnt));
             if(imageDetails == null){
-                imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,null);
+                imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,null,image.getRepoTags()[0]);
             }
             imageRepository.save(imageDetails);
         }
