@@ -1,6 +1,8 @@
 package com.tdcr.docker.backend.service.impl;
 
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.Statistics;
 import com.orbitz.consul.AgentClient;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
@@ -118,9 +120,12 @@ public class AgentServiceImpl implements AgentService, HasLogger {
             });
             checkContainerStatusThread.start();
 
-            /*Thread checkLoadThread = new Thread(new Runnable() {
+           /* Thread checkLoadThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    boolean memUsageIncrease=false;//update flag after last 5 check;
+                    Number previousMemUsage = null;
+                    int iterationCheck = 0;
                     while(true){
                         try {
                             ConsulResponse<List<HealthCheck>> response =
@@ -128,7 +133,7 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                             for (HealthCheck hc:
                                     response.getResponse()) {
                                 String svcName = hc.getServiceName().get();
-                                if("serfHealth".equals(hc.getCheckId())) continue;
+                                if(!"myMicroSvc".equals(svcName)) continue;
                                 getLogger().info("{} with id {} is {}",hc.getServiceName().get(),
                                         hc.getCheckId(),hc.getStatus());
 
@@ -136,14 +141,42 @@ public class AgentServiceImpl implements AgentService, HasLogger {
                                         agentClient.getServices().get(
                                                 hc.getCheckId().replace("service:",
                                                         AppConst.EMPTY_STR)); // get Service
-
                                 String containerId = service.getAddress();
+                                dockerService.updateDockerClient(dockerDaemonName);
+                                Statistics stats =dockerService.getContainerRawStats(containerId);
+                                Number currentMemUsage = ((Number)stats.getMemoryStats().get("usage"));
+                                if(previousMemUsage == null){
+                                    previousMemUsage = currentMemUsage;
+                                    continue;
+                                }else if (currentMemUsage.longValue() > previousMemUsage.longValue()){
+                                    memUsageIncrease = true;
+                                    iterationCheck+=1;
+                                }else if(currentMemUsage.longValue() < previousMemUsage.longValue()){
+                                    memUsageIncrease = false;
+                                    iterationCheck-=1;
+                                }else if(currentMemUsage.longValue() == previousMemUsage.longValue()){
+                                    getLogger().info("memUsageIncrease: {}, iterationCheck: {}",memUsageIncrease,iterationCheck);
+                                    continue;
+                                }
+                                getLogger().info("memUsageIncrease: {}, iterationCheck: {}",memUsageIncrease,iterationCheck);
 
-                              *//*  CreateContainerResponse container = dockerService.cloneContainer(containerResponse);
-                                DockContainer dc = new DockContainer();
-                                dc.setContainerId(container.getId());
-                                dc.setImageId(containerResponse.getImageId());
-                                dockerService.updateContainerStatus(dc,true);*//*
+                                InspectContainerResponse containerResponse =
+                                        dockerService.inspectOnContainerId(containerId);
+                                ImageDetails imageDetails = dockerService.getImageDetails(containerResponse.getImageId().
+                                        replace(AppConst.SHA_256,AppConst.EMPTY_STR));
+                                if(memUsageIncrease && iterationCheck ==5){
+                                    CreateContainerResponse createContainerResponse =
+                                            dockerService.cloneContainer(containerResponse,svcName+"loadTest");
+                                    imageDetails.addContainerToList(
+                                            dockerService.createContainer(createContainerResponse,(svcName+"loadTest"),containerResponse.getImageId()));
+                                    dockerService.saveImageDetails(imageDetails);
+                                    previousMemUsage =  null;
+                                    iterationCheck = -1;
+                                }else if(iterationCheck ==0){
+                                    if(imageDetails.getTotalContainersList().size() ==1) continue;
+                                    previousMemUsage =  null;
+                                    iterationCheck = -1;
+                                }
                             }
                         } catch (Exception e) {
                             getLogger().error(e.getMessage());

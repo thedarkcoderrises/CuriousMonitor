@@ -57,4 +57,8 @@ public interface DockerService {
 
     public CreateContainerResponse cloneContainer(InspectContainerResponse response, String containerName);
 
+    String createContainer(CreateContainerResponse container,String containerName,String imageId);
+
+    void saveImageDetails(ImageDetails imageDetails);
+
 }

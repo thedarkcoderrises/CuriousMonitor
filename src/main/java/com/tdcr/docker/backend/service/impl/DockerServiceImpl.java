@@ -269,7 +269,7 @@ public class DockerServiceImpl implements DockerService, HasLogger {
             if(imageDetails == null){
                 imageDetails   = new ImageDetails(image.getId().replace(AppConst.SHA_256,AppConst.EMPTY_STR),true,4,dockerDaemon,null,image.getRepoTags()[0]);
             }
-            imageRepository.save(imageDetails);
+            saveImageDetails(imageDetails);
         }
         list.sort(new Comparator<DockImage>() {
             @Override
@@ -279,6 +279,11 @@ public class DockerServiceImpl implements DockerService, HasLogger {
             }
         });
         return list;
+    }
+
+    @Override
+    public void saveImageDetails(ImageDetails imageDetails) {
+        imageRepository.save(imageDetails);
     }
 
     @Override
@@ -345,4 +350,15 @@ public class DockerServiceImpl implements DockerService, HasLogger {
         return cmd.exec();
     }
 
+    @Override
+    public String createContainer(CreateContainerResponse container, String containerName, String imageId) {
+        DockContainer dc = new DockContainer();
+        dc.setContainerId(container.getId());
+        dc.setContainerName(containerName);
+        dc.setImageId(imageId);
+        String containerId =updateContainerStatus(dc,true );
+        eventsRepository.save(new Event(LocalDate.now(), LocalTime.now(), EventState.CREATED,
+                "Container created with ID :"+container.getId()+", name :"+containerName,AppConst.EMPTY_STR,AppConst.EMPTY_STR));
+        return containerId;
+    }
 }
