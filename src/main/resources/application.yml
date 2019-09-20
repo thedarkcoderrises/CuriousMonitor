@@ -5,7 +5,7 @@ server.port: 8081
 
 dockerDaemonMap:
   LOCAL_DD: ${LOCAL:localhost}
-  AWS_DD: ${AWS:}
+  AWS_DD: ec2-13-235-83-136.ap-south-1.compute.amazonaws.com
 #  OTHER_DD: ${OTHER_DD}
 
 kafka.url: ${kafka}
@@ -23,14 +23,14 @@ checkInterval: 30000
 
 x-axis: 5
 
-#logging:
-#  level:
-#    root: ERROR
-#    org.springframework.web: INFO
-#    tdcr.notification: DEBUG
-#    org.apache.kafka: INFO
-#    com.amazonaws: INFO
-#  file: logs/curious.log
-#  pattern:
-#    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-#    file:
+logging:
+  level:
+    root: ERROR
+    org.springframework.web: INFO
+    tdcr.notification: DEBUG
+    org.apache.kafka: INFO
+    com.amazonaws: INFO
+  file: logs/curious.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file:
