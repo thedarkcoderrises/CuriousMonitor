@@ -5,7 +5,7 @@ server.port: 8081
 
 dockerDaemonMap:
   LOCAL_DD: ${LOCAL:localhost}
-  AWS_DD: ec2-13-235-83-136.ap-south-1.compute.amazonaws.com
+  AWS_DD: ${AWS:}
 #  OTHER_DD: ${OTHER_DD}
 
 kafka.url: ${kafka}
